@@ -68,6 +68,7 @@ export interface CliArgs {
   telemetryLogPrompts: boolean | undefined;
   telemetryOutfile: string | undefined;
   allowedMcpServerNames: string[] | undefined;
+  autoApprovedTools: string[] | undefined;
   experimentalAcp: boolean | undefined;
   extensions: string[] | undefined;
   listExtensions: boolean | undefined;
@@ -204,6 +205,11 @@ export async function parseArguments(): Promise<CliArgs> {
           type: 'array',
           string: true,
           description: 'Allowed MCP server names',
+        })
+        .option('auto-approved-tools', {
+          type: 'array',
+          string: true,
+          description: 'Tools that are allowed to run without confirmation',
         })
         .option('extensions', {
           alias: 'e',
@@ -487,6 +493,8 @@ export async function loadCliConfig(
     question,
     fullContext: argv.allFiles || argv.all_files || false,
     coreTools: settings.coreTools || undefined,
+    autoApprovedTools:
+      argv.autoApprovedTools || settings.autoApprovedTools || undefined,
     excludeTools,
     toolDiscoveryCommand: settings.toolDiscoveryCommand,
     toolCallCommand: settings.toolCallCommand,
