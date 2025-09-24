@@ -215,7 +215,6 @@ describe('CoreToolScheduler', () => {
       tools: new Map(),
       discovery: {},
       registerTool: () => {},
-      getToolByName: () => declarativeTool,
       getToolByDisplayName: () => declarativeTool,
       getTools: () => [],
       discoverTools: async () => {},
@@ -407,7 +406,6 @@ describe('CoreToolScheduler with payload', () => {
       tools: new Map(),
       discovery: {},
       registerTool: () => {},
-      getToolByName: () => declarativeTool,
       getToolByDisplayName: () => declarativeTool,
       getTools: () => [],
       discoverTools: async () => {},
@@ -730,7 +728,6 @@ describe('CoreToolScheduler edit cancellation', () => {
       tools: new Map(),
       discovery: {},
       registerTool: () => {},
-      getToolByName: () => mockEditTool,
       getToolByDisplayName: () => mockEditTool,
       getTools: () => [],
       discoverTools: async () => {},
@@ -825,7 +822,6 @@ describe('CoreToolScheduler YOLO mode', () => {
 
     const mockToolRegistry = {
       getTool: () => declarativeTool,
-      getToolByName: () => declarativeTool,
       // Other properties are not needed for this test but are included for type consistency.
       getFunctionDeclarations: () => [],
       tools: new Map(),
@@ -934,7 +930,6 @@ describe('CoreToolScheduler request queueing', () => {
 
     const mockToolRegistry = {
       getTool: () => declarativeTool,
-      getToolByName: () => declarativeTool,
       getFunctionDeclarations: () => [],
       tools: new Map(),
       discovery: {},
@@ -1062,7 +1057,6 @@ describe('CoreToolScheduler request queueing', () => {
 
     const toolRegistry = {
       getTool: () => declarativeTool,
-      getToolByName: () => declarativeTool,
       getFunctionDeclarations: () => [],
       tools: new Map(),
       discovery: {},
@@ -1164,7 +1158,6 @@ describe('CoreToolScheduler request queueing', () => {
     const declarativeTool = mockTool;
     const mockToolRegistry = {
       getTool: () => declarativeTool,
-      getToolByName: () => declarativeTool,
       getFunctionDeclarations: () => [],
       tools: new Map(),
       discovery: {},
@@ -1291,7 +1284,6 @@ describe('CoreToolScheduler request queueing', () => {
       tools: new Map(),
       config: mockConfig,
       mcpClientManager: undefined,
-      getToolByName: () => testTool,
       getToolByDisplayName: () => testTool,
       getTools: () => [],
       discoverTools: async () => {},
@@ -1622,7 +1614,6 @@ describe('CoreToolScheduler Security', () => {
 
     const mockToolRegistry = {
       getTool: vi.fn(),
-      getToolByName: vi.fn(),
     } as Partial<ToolRegistry> as ToolRegistry;
 
     const mockConfig = {
@@ -1650,13 +1641,13 @@ describe('CoreToolScheduler Security', () => {
       getTargetDir: () => '/tmp',
       getShouldUseNodePtyShell: () => false,
       getSummarizeToolOutputConfig: () => ({}),
-    } as Partial<Config> as Config;
+      getShellExecutionConfig: () => ({}),
+    } as unknown as Config;
 
     const shellTool = new ShellTool(mockConfig);
 
     // Now that shellTool is created, we can set the mocks for the registry.
-    (mockToolRegistry.getTool as vi.Mock).mockReturnValue(shellTool);
-    (mockToolRegistry.getToolByName as vi.Mock).mockReturnValue(shellTool);
+    (mockToolRegistry.getTool as Mock).mockReturnValue(shellTool);
 
     const onAllToolCallsComplete = vi.fn();
     const onToolCallsUpdate = vi.fn();
@@ -1697,7 +1688,6 @@ describe('CoreToolScheduler Security', () => {
 
     const mockToolRegistry = {
       getTool: vi.fn(),
-      getToolByName: vi.fn(),
     } as Partial<ToolRegistry> as ToolRegistry;
 
     const mockConfig = {
@@ -1725,13 +1715,13 @@ describe('CoreToolScheduler Security', () => {
       getTargetDir: () => '/tmp',
       getShouldUseNodePtyShell: () => false,
       getSummarizeToolOutputConfig: () => ({}),
-    } as Partial<Config> as Config;
+      getShellExecutionConfig: () => ({}),
+    } as unknown as Config;
 
     const shellTool = new ShellTool(mockConfig);
 
     // Now that shellTool is created, we can set the mocks for the registry.
-    (mockToolRegistry.getTool as vi.Mock).mockReturnValue(shellTool);
-    (mockToolRegistry.getToolByName as vi.Mock).mockReturnValue(shellTool);
+    (mockToolRegistry.getTool as Mock).mockReturnValue(shellTool);
 
     const onAllToolCallsComplete = vi.fn();
     const onToolCallsUpdate = vi.fn();
@@ -1770,7 +1760,6 @@ describe('CoreToolScheduler Security', () => {
 
     const mockToolRegistry = {
       getTool: vi.fn(),
-      getToolByName: vi.fn(),
     } as Partial<ToolRegistry> as ToolRegistry;
 
     const mockConfig = {
@@ -1798,13 +1787,13 @@ describe('CoreToolScheduler Security', () => {
       getTargetDir: () => '/tmp',
       getShouldUseNodePtyShell: () => false,
       getSummarizeToolOutputConfig: () => ({}),
-    } as Partial<Config> as Config;
+      getShellExecutionConfig: () => ({}),
+    } as unknown as Config;
 
     const shellTool = new ShellTool(mockConfig);
 
     // Now that shellTool is created, we can set the mocks for the registry.
-    (mockToolRegistry.getTool as vi.Mock).mockReturnValue(shellTool);
-    (mockToolRegistry.getToolByName as vi.Mock).mockReturnValue(shellTool);
+    (mockToolRegistry.getTool as Mock).mockReturnValue(shellTool);
 
     const onAllToolCallsComplete = vi.fn();
     const onToolCallsUpdate = vi.fn();
@@ -1845,7 +1834,6 @@ describe('CoreToolScheduler Security', () => {
 
     const mockToolRegistry = {
       getTool: vi.fn(),
-      getToolByName: vi.fn(),
     } as Partial<ToolRegistry> as ToolRegistry;
 
     const mockConfig = {
@@ -1876,13 +1864,13 @@ describe('CoreToolScheduler Security', () => {
       getTargetDir: () => '/tmp',
       getShouldUseNodePtyShell: () => false,
       getSummarizeToolOutputConfig: () => ({}),
-    } as Partial<Config> as Config;
+      getShellExecutionConfig: () => ({}),
+    } as unknown as Config;
 
     const shellTool = new ShellTool(mockConfig);
 
     // Now that shellTool is created, we can set the mocks for the registry.
-    (mockToolRegistry.getTool as vi.Mock).mockReturnValue(shellTool);
-    (mockToolRegistry.getToolByName as vi.Mock).mockReturnValue(shellTool);
+    (mockToolRegistry.getTool as Mock).mockReturnValue(shellTool);
 
     const onAllToolCallsComplete = vi.fn();
     const onToolCallsUpdate = vi.fn();
@@ -1910,5 +1898,3 @@ describe('CoreToolScheduler Security', () => {
     });
   });
 });
-
-

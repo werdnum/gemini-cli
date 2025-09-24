@@ -5,6 +5,7 @@
  */
 
 import { isTool } from '../index.js';
+import type { AnyDeclarativeTool, AnyToolInvocation } from '../tools/tools.js';
 import { splitCommands } from './shell-utils.js';
 
 const SHELL_TOOL_NAMES = ['run_shell_command', 'ShellTool'];
@@ -45,7 +46,9 @@ export function doesToolInvocationMatch(
 
     // Every single subcommand must be on the allowlist.
     return subCommands.every((subCommand) => {
-      const subInvocation = { params: { command: subCommand } };
+      const subInvocation = {
+        params: { command: subCommand },
+      } as unknown as AnyToolInvocation;
       return patterns.some((pattern) =>
         isSingleCommandAllowed(pattern, toolNames, subInvocation),
       );
