@@ -82,9 +82,9 @@ export class ShellToolInvocation extends BaseToolInvocation<
     const globalAllowlist = this.config.getAllowedTools() || [];
 
     const commandsToConfirm = allCommands.filter((cmd) => {
-      const invocation: AnyToolInvocation & { params: { command: string } } = {
+      const invocation = {
         params: { command: cmd },
-      } as any;
+      } as unknown as AnyToolInvocation;
 
       // Check if the command is on the global allowlist.
       const isGloballyAllowed = doesToolInvocationMatch(
@@ -109,7 +109,7 @@ export class ShellToolInvocation extends BaseToolInvocation<
       title: 'Confirm Shell Command',
       command: this.params.command,
       rootCommand: commandsToConfirm.join(', '),
-      onConfirm: async (outcome: ToolConfirmationommandConfirmationOutcome) => {
+      onConfirm: async (outcome: ToolConfirmationOutcome) => {
         if (outcome === ToolConfirmationOutcome.ProceedAlways) {
           // Add only the root of the commands that were confirmed to the session allowlist.
           getCommandRoots(commandsToConfirm.join(' ')).forEach((root) =>
