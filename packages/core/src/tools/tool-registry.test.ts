@@ -541,6 +541,28 @@ describe('ToolRegistry', () => {
       expect(description).toBe(JSON.stringify(params));
     });
   });
+
+  describe('MCP Tool Lookup', () => {
+    it('should find an MCP tool by its fully qualified name even if registered with short name', () => {
+      const serverName = 'DuckieMCP';
+      const toolName = 'ask_duckie';
+      const mcpTool = createMCPTool(serverName, toolName, 'Ask a duckie');
+
+      // Default registration uses the short name (sanitized toolName)
+      toolRegistry.registerTool(mcpTool);
+
+      // Verify it is registered with short name
+      expect(toolRegistry.getTool(toolName)).toBeDefined();
+      expect(toolRegistry.getTool(toolName)?.name).toBe(toolName);
+
+      // Attempt to retrieve using fully qualified name
+      const qualifiedName = `${serverName}__${toolName}`;
+      const retrievedTool = toolRegistry.getTool(qualifiedName);
+
+      expect(retrievedTool).toBeDefined();
+      expect(retrievedTool?.name).toBe(toolName);
+    });
+  });
 });
 
 /**
