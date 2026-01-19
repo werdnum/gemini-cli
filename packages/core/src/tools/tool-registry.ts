@@ -488,8 +488,8 @@ export class ToolRegistry {
   getFunctionDeclarationsFiltered(toolNames: string[]): FunctionDeclaration[] {
     const declarations: FunctionDeclaration[] = [];
     for (const name of toolNames) {
-      const tool = this.allKnownTools.get(name);
-      if (tool && this.isActiveTool(tool)) {
+      const tool = this.getTool(name);
+      if (tool) {
         declarations.push(tool.schema);
       }
     }
@@ -530,7 +530,28 @@ export class ToolRegistry {
    * Get the definition of a specific tool.
    */
   getTool(name: string): AnyDeclarativeTool | undefined {
-    const tool = this.allKnownTools.get(name);
+    // Try direct lookup first
+    let tool = this.allKnownTools.get(name);
+
+    // Fallback: If not found, check if it's a fully qualified MCP name (server__tool)
+    // registered with its short name.
+    if (!tool && name.includes('__')) {
+      const parts = name.split('__');
+      if (parts.length === 2) {
+        const [serverName, toolName] = parts;
+        for (const t of this.allKnownTools.values()) {
+          if (
+            t instanceof DiscoveredMCPTool &&
+            t.serverName === serverName &&
+            t.serverToolName === toolName
+          ) {
+            tool = t;
+            break;
+          }
+        }
+      }
+    }
+
     if (tool && this.isActiveTool(tool)) {
       return tool;
     }
