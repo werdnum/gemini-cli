@@ -77,6 +77,46 @@ System prompt content.`);
       });
     });
 
+    it('should parse frontmatter with parameterized tools', async () => {
+      const filePath = await writeAgentMarkdown(`---
+name: param-agent
+description: Agent with parameterized tools
+tools:
+  - run_shell_command(timeout=10)
+  - read_file
+---
+Body`);
+
+      const result = await parseAgentMarkdown(filePath);
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        name: 'param-agent',
+        description: 'Agent with parameterized tools',
+        tools: ['run_shell_command(timeout=10)', 'read_file'],
+        system_prompt: 'Body',
+      });
+    });
+
+    it('should parse frontmatter with qualified MCP tool names', async () => {
+      const filePath = await writeAgentMarkdown(`---
+name: mcp-agent
+description: Agent with MCP tools
+tools:
+  - my-server__my-tool
+  - other-server__other-tool(param=1)
+---
+Body`);
+
+      const result = await parseAgentMarkdown(filePath);
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        name: 'mcp-agent',
+        description: 'Agent with MCP tools',
+        tools: ['my-server__my-tool', 'other-server__other-tool(param=1)'],
+        system_prompt: 'Body',
+      });
+    });
+
     it('should throw AgentLoadError if frontmatter is missing', async () => {
       const filePath = await writeAgentMarkdown(`Just some markdown content.`);
       await expect(parseAgentMarkdown(filePath)).rejects.toThrow(

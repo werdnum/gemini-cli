@@ -80,9 +80,15 @@ const localAgentSchema = z
     display_name: z.string().optional(),
     tools: z
       .array(
-        z.string().refine((val) => isValidToolName(val), {
-          message: 'Invalid tool name',
-        }),
+        z.string().refine(
+          (val) => {
+            const name = val.split('(')[0];
+            return isValidToolName(name);
+          },
+          {
+            message: 'Invalid tool name',
+          },
+        ),
       )
       .optional(),
     model: z.string().optional(),
@@ -219,7 +225,9 @@ export async function parseAgentMarkdown(
   // Validate tools
   if (
     frontmatter.tools &&
-    frontmatter.tools.includes(DELEGATE_TO_AGENT_TOOL_NAME)
+    frontmatter.tools.some(
+      (t) => t.split('(')[0] === DELEGATE_TO_AGENT_TOOL_NAME,
+    )
   ) {
     throw new AgentLoadError(
       filePath,

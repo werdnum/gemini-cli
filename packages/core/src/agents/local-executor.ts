@@ -17,6 +17,7 @@ import type {
 } from '@google/genai';
 import { executeToolCall } from '../core/nonInteractiveToolExecutor.js';
 import { ToolRegistry } from '../tools/tool-registry.js';
+import { DiscoveredMCPTool } from '../tools/mcp-tool.js';
 import { CompressionStatus } from '../core/turn.js';
 import { type ToolCallRequestInfo } from '../scheduler/types.js';
 import { ChatCompressionService } from '../services/chatCompressionService.js';
@@ -116,7 +117,27 @@ export class LocalAgentExecutor<TOutput extends z.ZodTypeAny> {
         if (typeof toolRef === 'string') {
           // If the tool is referenced by name, retrieve it from the parent
           // registry and register it with the agent's isolated registry.
-          const toolFromParent = parentToolRegistry.getTool(toolRef);
+          // We support parameterized tools (e.g. "tool(arg)"), so we strip the args.
+          const toolName = toolRef.split('(')[0];
+          let toolFromParent = parentToolRegistry.getTool(toolName);
+
+          // If not found, it might be a fully qualified MCP tool name (Server__Tool)
+          // where the registry holds it as unqualified (Tool).
+          if (!toolFromParent && toolName.includes('__')) {
+            const parts = toolName.split('__');
+            if (parts.length === 2) {
+              const [serverName, shortToolName] = parts;
+              const serverTools =
+                parentToolRegistry.getToolsByServer(serverName);
+              const foundTool = serverTools.find(
+                (t) => t.name === shortToolName,
+              );
+              if (foundTool instanceof DiscoveredMCPTool) {
+                toolFromParent = foundTool.asFullyQualifiedTool();
+              }
+            }
+          }
+
           if (toolFromParent) {
             agentToolRegistry.registerTool(toolFromParent);
           }
@@ -988,7 +1009,7 @@ export class LocalAgentExecutor<TOutput extends z.ZodTypeAny> {
       const toolNamesToLoad: string[] = [];
       for (const toolRef of toolConfig.tools) {
         if (typeof toolRef === 'string') {
-          toolNamesToLoad.push(toolRef);
+          toolNamesToLoad.push(toolRef.split('(')[0]);
         } else if (typeof toolRef === 'object' && 'schema' in toolRef) {
           // Tool instance with an explicit schema property.
           toolsList.push(toolRef.schema);
