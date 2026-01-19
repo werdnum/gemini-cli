@@ -28,6 +28,8 @@ export const DELEGATE_TO_AGENT_TOOL_NAME = 'delegate_to_agent';
 /** Prefix used for tools discovered via the toolDiscoveryCommand. */
 export const DISCOVERED_TOOL_PREFIX = 'discovered_tool_';
 
+const slugRegex = /^[a-z0-9-_]+$/i;
+
 /**
  * List of all built-in tool names.
  */
@@ -56,16 +58,6 @@ export function isValidToolName(
   name: string,
   options: { allowWildcards?: boolean } = {},
 ): boolean {
-  // Built-in tools
-  if ((ALL_BUILTIN_TOOL_NAMES as readonly string[]).includes(name)) {
-    return true;
-  }
-
-  // Discovered tools
-  if (name.startsWith(DISCOVERED_TOOL_PREFIX)) {
-    return true;
-  }
-
   // Policy wildcards
   if (options.allowWildcards && name === '*') {
     return true;
@@ -86,9 +78,9 @@ export function isValidToolName(
     }
 
     // Basic slug validation for server and tool names
-    const slugRegex = /^[a-z0-9-_]+$/i;
     return slugRegex.test(server) && slugRegex.test(tool);
   }
 
-  return false;
+  // Allow any valid slug to support simple MCP tool names (e.g. 'get_weather')
+  return slugRegex.test(name);
 }
