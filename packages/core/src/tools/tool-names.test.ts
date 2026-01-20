@@ -30,9 +30,14 @@ describe('tool-names', () => {
       expect(isValidToolName('my-server__my-tool')).toBe(true);
     });
 
+    it('should accept generic slug names', () => {
+      expect(isValidToolName('invalid-name')).toBe(true);
+      expect(isValidToolName('my_tool')).toBe(true);
+    });
+
     it('should reject invalid tool names', () => {
       expect(isValidToolName('')).toBe(false);
-      expect(isValidToolName('invalid-name')).toBe(false);
+      expect(isValidToolName('invalid name')).toBe(false); // space
       expect(isValidToolName('server__')).toBe(false);
       expect(isValidToolName('__tool')).toBe(false);
       expect(isValidToolName('server__tool__extra')).toBe(false);
