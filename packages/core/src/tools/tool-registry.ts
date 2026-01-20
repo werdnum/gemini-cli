@@ -14,7 +14,7 @@ import { Kind, BaseDeclarativeTool, BaseToolInvocation } from './tools.js';
 import type { Config } from '../config/config.js';
 import { spawn } from 'node:child_process';
 import { StringDecoder } from 'node:string_decoder';
-import { DiscoveredMCPTool, generateValidName } from './mcp-tool.js';
+import { DiscoveredMCPTool } from './mcp-tool.js';
 import { parse } from 'shell-quote';
 import { ToolErrorType } from './tool-error.js';
 import { safeJsonStringify } from '../utils/safeJsonStringify.js';
@@ -534,8 +534,7 @@ export class ToolRegistry {
     if (!tool && name.includes('__')) {
       for (const t of this.allKnownTools.values()) {
         if (t instanceof DiscoveredMCPTool) {
-          const fqn = `${t.serverName}__${generateValidName(t.serverToolName)}`;
-          if (fqn === name) {
+          if (t.getFullyQualifiedName() === name) {
             tool = t;
             break;
           }

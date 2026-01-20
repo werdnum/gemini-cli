@@ -561,9 +561,8 @@ describe('ToolRegistry', () => {
       expect(toolRegistry.getTool(validToolName)).toBeDefined();
       expect(toolRegistry.getTool(validToolName)?.name).toBe(validToolName);
 
-      // Verify it is available as 'my-server__my tool'
-      // Note: DiscoveredMCPTool uses serverToolName for FQ lookup, not registered name.
-      const fullyQualifiedName = `${serverName}__${toolName}`;
+      // Verify it is available as 'my-server__my_tool'
+      const fullyQualifiedName = `${serverName}__${validToolName}`;
       const retrievedTool = toolRegistry.getTool(fullyQualifiedName);
 
       expect(retrievedTool).toBeDefined();
