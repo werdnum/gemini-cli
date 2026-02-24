@@ -10,6 +10,7 @@ import { Box, Text } from 'ink';
 import type { ThoughtSummary } from '@google/gemini-cli-core';
 import { theme } from '../../semantic-colors.js';
 import { normalizeEscapedNewlines } from '../../utils/textUtils.js';
+import { CopySafeBox } from '../shared/CopySafeBox.js';
 
 interface ThinkingMessageProps {
   thought: ThoughtSummary;
@@ -69,7 +70,7 @@ export const ThinkingMessage: React.FC<ThinkingMessageProps> = ({
         </Text>
       )}
 
-      <Box
+      <CopySafeBox
         marginLeft={THINKING_LEFT_PADDING}
         paddingLeft={1}
         borderStyle="single"
@@ -91,7 +92,7 @@ export const ThinkingMessage: React.FC<ThinkingMessageProps> = ({
             {line}
           </Text>
         ))}
-      </Box>
+      </CopySafeBox>
     </Box>
   );
 };
