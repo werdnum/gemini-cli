@@ -5,7 +5,6 @@ exports[`ToolConfirmationQueue > calculates availableContentHeight based on avai
 │ Action Required                                                              │
 │                                                                              │
 │ ?  replace edit file                                                         │
-│                                                                              │
 │ ... 49 hidden (Ctrl+O) ...                                                   │
 │ 50 line                                                                      │
 │ Apply this change?                                                           │
@@ -24,7 +23,6 @@ exports[`ToolConfirmationQueue > does not render expansion hint when constrainHe
 │ Action Required                                                              │
 │                                                                              │
 │ ?  replace edit file                                                         │
-│                                                                              │
 │ ╭──────────────────────────────────────────────────────────────────────────╮ │
 │ │                                                                          │ │
 │ │ No changes detected.                                                     │ │
@@ -44,7 +42,6 @@ exports[`ToolConfirmationQueue > does not render expansion hint when constrainHe
 exports[`ToolConfirmationQueue > provides more height for ask_user by subtracting less overhead 1`] = `
 "╭──────────────────────────────────────────────────────────────────────────────╮
 │ Answer Questions                                                             │
-│                                                                              │
 │ Line 1                                                                       │
 │ Line 2                                                                       │
 │ Line 3                                                                       │
@@ -64,7 +61,6 @@ exports[`ToolConfirmationQueue > provides more height for ask_user by subtractin
 exports[`ToolConfirmationQueue > renders AskUser tool confirmation with Success color 1`] = `
 "╭──────────────────────────────────────────────────────────────────────────────╮
 │ Answer Questions                                                             │
-│                                                                              │
 │ Review your answers:                                                         │
 │                                                                              │
 │                                                                              │
@@ -76,7 +72,6 @@ exports[`ToolConfirmationQueue > renders AskUser tool confirmation with Success 
 exports[`ToolConfirmationQueue > renders ExitPlanMode tool confirmation with Success color 1`] = `
 "╭──────────────────────────────────────────────────────────────────────────────╮
 │ Ready to start implementation?                                               │
-│                                                                              │
 │ Plan content goes here                                                       │
 │                                                                              │
 │ ● 1.  Yes, automatically accept edits                                        │
@@ -95,7 +90,6 @@ exports[`ToolConfirmationQueue > renders expansion hint when content is long and
 │ Action Required                                                              │
 │                                                                              │
 │ ?  replace edit file                                                         │
-│                                                                              │
 │ ... 49 hidden (Ctrl+O) ...                                                   │
 │ 50 line                                                                      │
 │ Apply this change?                                                           │
@@ -115,7 +109,6 @@ exports[`ToolConfirmationQueue > renders the confirming tool with progress indic
 │ Action Required                                                       1 of 3 │
 │                                                                              │
 │ ?  ls list files                                                             │
-│                                                                              │
 │ ls                                                                           │
 │ Allow execution of: 'ls'?                                                    │
 │                                                                              │
