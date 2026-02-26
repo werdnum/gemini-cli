@@ -12,6 +12,7 @@ import { useScrollable } from '../../contexts/ScrollProvider.js';
 import { useAnimatedScrollbar } from '../../hooks/useAnimatedScrollbar.js';
 import { useBatchedScroll } from '../../hooks/useBatchedScroll.js';
 import { keyMatchers, Command } from '../../keyMatchers.js';
+import { useUIState } from '../../contexts/UIStateContext.js';
 
 interface ScrollableProps {
   children?: React.ReactNode;
@@ -34,6 +35,7 @@ export const Scrollable: React.FC<ScrollableProps> = ({
   scrollToBottom,
   flexGrow,
 }) => {
+  const { copyModeEnabled } = useUIState();
   const [scrollTop, setScrollTop] = useState(0);
   const viewportRef = useRef<DOMElement | null>(null);
   const contentRef = useRef<DOMElement | null>(null);
@@ -206,9 +208,9 @@ export const Scrollable: React.FC<ScrollableProps> = ({
       width={width ?? maxWidth}
       height={height}
       flexDirection="column"
-      overflowY="scroll"
+      overflowY={copyModeEnabled ? 'hidden' : 'scroll'}
       overflowX="hidden"
-      scrollTop={scrollTop}
+      scrollTop={copyModeEnabled ? 0 : scrollTop}
       flexGrow={flexGrow}
       scrollbarThumbColor={scrollbarColor}
     >
@@ -220,8 +222,9 @@ export const Scrollable: React.FC<ScrollableProps> = ({
       <Box
         ref={contentRefCallback}
         flexShrink={0}
-        paddingRight={1}
+        paddingRight={copyModeEnabled ? 0 : 1}
         flexDirection="column"
+        marginTop={copyModeEnabled ? -scrollTop : 0}
       >
         {children}
       </Box>
