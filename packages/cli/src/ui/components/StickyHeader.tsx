@@ -28,14 +28,12 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
 }) => {
   const commonProps = {
     borderStyle: 'round' as const,
-    flexDirection: 'column' as const,
     width,
     borderColor,
     borderDimColor,
     borderBottom: false,
     borderTop: isFirst,
     paddingTop: isFirst ? 0 : 1,
-    paddingX: 1,
   };
 
   return (
@@ -46,8 +44,10 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
       flexShrink={0}
       width={width}
       stickyChildren={
-        <CopySafeBox {...commonProps} opaque>
-          {children}
+        <CopySafeBox {...commonProps} flexDirection="column" opaque>
+          <Box paddingX={1} flexDirection="row">
+            {children}
+          </Box>
           {/* Dark border to separate header from content. */}
           <CopySafeBox
             width="100%"
@@ -61,7 +61,14 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
         </CopySafeBox>
       }
     >
-      <CopySafeBox {...commonProps} borderLeft={true} borderRight={true}>
+      <CopySafeBox
+        {...commonProps}
+        flexDirection="row"
+        borderLeft={true}
+        borderRight={true}
+        paddingX={1}
+        paddingBottom={1}
+      >
         {children}
       </CopySafeBox>
     </Box>
