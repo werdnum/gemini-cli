@@ -103,7 +103,7 @@ export const ShellToolMessage: React.FC<ShellToolMessageProps> = ({
   const { shouldShowFocusHint } = useFocusHint(
     isThisShellFocusable,
     isThisShellFocused,
-     
+
     resultDisplay,
   );
 
