@@ -2,8 +2,13 @@
 
 exports[`ToolResultDisplay Overflow > should display "press ctrl-o" hint when content overflows in ToolGroupMessage 1`] = `
 " ╭──────────────────────────────────────────────────────────────────────────╮
+<<<<<<< HEAD
  │ ✓                                                                        │
  │ test-tool a test tool                                                    │
+=======
+ │ ✓  test-tool a test tool                                                 │
+ │                                                                          │
+>>>>>>> 536fe2fe8 (fix(cli): resolve upstream layout conflicts, update snapshots, and fix test mocks)
  │ line 45                                                                  │
  │ line 46                                                                  │
  │ line 47                                                                  │

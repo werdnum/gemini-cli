@@ -2,18 +2,59 @@
 
 exports[`ToolMessage Sticky Header Regression > verifies that ShellToolMessage in a ToolGroupMessage in a ScrollableList has sticky headers 1`] = `
 " ╭────────────────────────────────────────────────────────────────────────╮    █
+<<<<<<< HEAD
  │ ✓                                                                      │    █
  │ Shell Command Description for Shell Command                            │
+ │ shell-01                                                               │
+ │ shell-02                                                               │
+=======
+ │ ✓  Shell Command Description for Shell Command                         │    █
+ │                                                                        │
  │ shell-01                                                               │
  │ shell-02                                                               │
 "
 `;
 
+exports[`ToolMessage Sticky Header Regression > verifies that ShellToolMessage in a ToolGroupMessage in a ScrollableList has sticky headers 2`] = `
+" ╭────────────────────────────────────────────────────────────────────────╮
+ │ ✓  Shell Command Description for Shell Command                         │    ▄
+ │────────────────────────────────────────────────────────────────────────│    █
+ │ shell-06                                                               │    ▀
+ │ shell-07                                                               │
+>>>>>>> 536fe2fe8 (fix(cli): resolve upstream layout conflicts, update snapshots, and fix test mocks)
+"
+`;
+
 exports[`ToolMessage Sticky Header Regression > verifies that multiple ToolMessages in a ToolGroupMessage in a ScrollableList have sticky headers 1`] = `
 " ╭────────────────────────────────────────────────────────────────────────╮    █
+<<<<<<< HEAD
  │ ✓                                                                      │
  │ tool-1 Description for tool-1                                          │
  │ c1-01                                                                  │
  │ c1-02                                                                  │
+=======
+ │ ✓  tool-1 Description for tool-1                                       │
+ │                                                                        │
+ │ c1-01                                                                  │
+ │ c1-02                                                                  │
+"
+`;
+
+exports[`ToolMessage Sticky Header Regression > verifies that multiple ToolMessages in a ToolGroupMessage in a ScrollableList have sticky headers 2`] = `
+" ╭────────────────────────────────────────────────────────────────────────╮
+ │ ✓  tool-1 Description for tool-1                                       │    █
+ │────────────────────────────────────────────────────────────────────────│
+ │ c1-06                                                                  │
+ │ c1-07                                                                  │
+"
+`;
+
+exports[`ToolMessage Sticky Header Regression > verifies that multiple ToolMessages in a ToolGroupMessage in a ScrollableList have sticky headers 3`] = `
+" │                                                                        │
+ │ ✓  tool-2 Description for tool-2                                       │
+ │────────────────────────────────────────────────────────────────────────│
+ │ c2-10                                                                  │
+ ╰────────────────────────────────────────────────────────────────────────╯    █
+>>>>>>> 536fe2fe8 (fix(cli): resolve upstream layout conflicts, update snapshots, and fix test mocks)
 "
 `;

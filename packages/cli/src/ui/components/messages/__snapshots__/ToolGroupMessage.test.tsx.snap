@@ -2,8 +2,13 @@
 
 exports[`<ToolGroupMessage /> > Ask User Filtering > filtering logic for status='error' and hasResult='error message' 1`] = `
 " ╭──────────────────────────────────────────────────────────────────────────╮
+<<<<<<< HEAD
  │ x                                                                        │
  │ Ask User                                                                 │
+=======
+ │ x  Ask User                                                              │
+ │                                                                          │
+>>>>>>> 536fe2fe8 (fix(cli): resolve upstream layout conflicts, update snapshots, and fix test mocks)
  │ error message                                                            │
  ╰──────────────────────────────────────────────────────────────────────────╯
 "
@@ -11,8 +16,13 @@ exports[`<ToolGroupMessage /> > Ask User Filtering > filtering logic for status=
 
 exports[`<ToolGroupMessage /> > Ask User Filtering > filtering logic for status='success' and hasResult='test result' 1`] = `
 " ╭──────────────────────────────────────────────────────────────────────────╮
+<<<<<<< HEAD
  │ ✓                                                                        │
  │ Ask User                                                                 │
+=======
+ │ ✓  Ask User                                                              │
+ │                                                                          │
+>>>>>>> 536fe2fe8 (fix(cli): resolve upstream layout conflicts, update snapshots, and fix test mocks)
  │ test result                                                              │
  ╰──────────────────────────────────────────────────────────────────────────╯
 "
@@ -20,8 +30,13 @@ exports[`<ToolGroupMessage /> > Ask User Filtering > filtering logic for status=
 
 exports[`<ToolGroupMessage /> > Ask User Filtering > shows other tools when ask_user is filtered out 1`] = `
 " ╭──────────────────────────────────────────────────────────────────────────╮
+<<<<<<< HEAD
  │ ✓                                                                        │
  │ other-tool A tool for testing                                            │
+=======
+ │ ✓  other-tool A tool for testing                                         │
+ │                                                                          │
+>>>>>>> 536fe2fe8 (fix(cli): resolve upstream layout conflicts, update snapshots, and fix test mocks)
  │ Test result                                                              │
  ╰──────────────────────────────────────────────────────────────────────────╯
 "
@@ -29,12 +44,21 @@ exports[`<ToolGroupMessage /> > Ask User Filtering > shows other tools when ask_
 
 exports[`<ToolGroupMessage /> > Border Color Logic > uses gray border when all tools are successful and no shell commands 1`] = `
 " ╭──────────────────────────────────────────────────────────────────────────╮
+<<<<<<< HEAD
  │ ✓                                                                        │
  │ test-tool A tool for testing                                             │
  │ Test result                                                              │
  │                                                                          │
  │ ✓                                                                        │
  │ another-tool A tool for testing                                          │
+=======
+ │ ✓  test-tool A tool for testing                                          │
+ │                                                                          │
+ │ Test result                                                              │
+ │                                                                          │
+ │ ✓  another-tool A tool for testing                                       │
+ │                                                                          │
+>>>>>>> 536fe2fe8 (fix(cli): resolve upstream layout conflicts, update snapshots, and fix test mocks)
  │ Test result                                                              │
  ╰──────────────────────────────────────────────────────────────────────────╯
 "
@@ -42,8 +66,13 @@ exports[`<ToolGroupMessage /> > Border Color Logic > uses gray border when all t
 
 exports[`<ToolGroupMessage /> > Border Color Logic > uses yellow border for shell commands even when successful 1`] = `
 " ╭──────────────────────────────────────────────────────────────────────────╮
+<<<<<<< HEAD
  │ ✓                                                                        │
  │ run_shell_command A tool for testing                                     │
+=======
+ │ ✓  run_shell_command A tool for testing                                  │
+ │                                                                          │
+>>>>>>> 536fe2fe8 (fix(cli): resolve upstream layout conflicts, update snapshots, and fix test mocks)
  │ Test result                                                              │
  ╰──────────────────────────────────────────────────────────────────────────╯
 "
@@ -53,12 +82,21 @@ exports[`<ToolGroupMessage /> > Golden Snapshots > renders empty tool calls arra
 
 exports[`<ToolGroupMessage /> > Golden Snapshots > renders header when scrolled 1`] = `
 " ╭──────────────────────────────────────────────────────────────────────────╮
+<<<<<<< HEAD
  │ ✓                                                                        │
  │ tool-1 Description 1. This is a long description that will need to be t… │
  │ ──────────────────────────────────────────────────────────────────────── │                      █
  │                                                                          │                      █
  │ ✓                                                                        │                      █
  │ tool-2 Description 2                                                     │                      █
+=======
+ │ ✓  tool-1 Description 1. This is a long description that will need to b… │
+ │──────────────────────────────────────────────────────────────────────────│
+ │ line5                                                                    │                      █
+ │                                                                          │                      █
+ │ ✓  tool-2 Description 2                                                  │                      █
+ │                                                                          │                      █
+>>>>>>> 536fe2fe8 (fix(cli): resolve upstream layout conflicts, update snapshots, and fix test mocks)
  │ line1                                                                    │                      █
  │ line2                                                                    │                      █
  ╰──────────────────────────────────────────────────────────────────────────╯                      █
@@ -67,12 +105,21 @@ exports[`<ToolGroupMessage /> > Golden Snapshots > renders header when scrolled 
 
 exports[`<ToolGroupMessage /> > Golden Snapshots > renders mixed tool calls including shell command 1`] = `
 " ╭──────────────────────────────────────────────────────────────────────────╮
+<<<<<<< HEAD
  │ ✓                                                                        │
  │ read_file Read a file                                                    │
  │ Test result                                                              │
  │                                                                          │
  │ ⊶                                                                        │
  │ run_shell_command Run command                                            │
+=======
+ │ ✓  read_file Read a file                                                 │
+ │                                                                          │
+ │ Test result                                                              │
+ │                                                                          │
+ │ ⊷  run_shell_command Run command                                         │
+ │                                                                          │
+>>>>>>> 536fe2fe8 (fix(cli): resolve upstream layout conflicts, update snapshots, and fix test mocks)
  │ Test result                                                              │
  ╰──────────────────────────────────────────────────────────────────────────╯
 "
@@ -80,12 +127,21 @@ exports[`<ToolGroupMessage /> > Golden Snapshots > renders mixed tool calls incl
 
 exports[`<ToolGroupMessage /> > Golden Snapshots > renders multiple tool calls with different statuses (only visible ones) 1`] = `
 " ╭──────────────────────────────────────────────────────────────────────────╮
+<<<<<<< HEAD
  │ ✓                                                                        │
  │ successful-tool This tool succeeded                                      │
  │ Test result                                                              │
  │                                                                          │
  │ x                                                                        │
  │ error-tool This tool failed                                              │
+=======
+ │ ✓  successful-tool This tool succeeded                                   │
+ │                                                                          │
+ │ Test result                                                              │
+ │                                                                          │
+ │ x  error-tool This tool failed                                           │
+ │                                                                          │
+>>>>>>> 536fe2fe8 (fix(cli): resolve upstream layout conflicts, update snapshots, and fix test mocks)
  │ Test result                                                              │
  ╰──────────────────────────────────────────────────────────────────────────╯
 "
@@ -93,8 +149,13 @@ exports[`<ToolGroupMessage /> > Golden Snapshots > renders multiple tool calls w
 
 exports[`<ToolGroupMessage /> > Golden Snapshots > renders single successful tool call 1`] = `
 " ╭──────────────────────────────────────────────────────────────────────────╮
+<<<<<<< HEAD
  │ ✓                                                                        │
  │ test-tool A tool for testing                                             │
+=======
+ │ ✓  test-tool A tool for testing                                          │
+ │                                                                          │
+>>>>>>> 536fe2fe8 (fix(cli): resolve upstream layout conflicts, update snapshots, and fix test mocks)
  │ Test result                                                              │
  ╰──────────────────────────────────────────────────────────────────────────╯
 "
@@ -102,8 +163,13 @@ exports[`<ToolGroupMessage /> > Golden Snapshots > renders single successful too
 
 exports[`<ToolGroupMessage /> > Golden Snapshots > renders tool call with outputFile 1`] = `
 " ╭──────────────────────────────────────────────────────────────────────────╮
+<<<<<<< HEAD
  │ ✓                                                                        │
  │ tool-with-file Tool that saved output to file                            │
+=======
+ │ ✓  tool-with-file Tool that saved output to file                         │
+ │                                                                          │
+>>>>>>> 536fe2fe8 (fix(cli): resolve upstream layout conflicts, update snapshots, and fix test mocks)
  │ Test result                                                              │
  │ Output too long and was saved to: /path/to/output.txt                    │
  ╰──────────────────────────────────────────────────────────────────────────╯
@@ -113,8 +179,13 @@ exports[`<ToolGroupMessage /> > Golden Snapshots > renders tool call with output
 exports[`<ToolGroupMessage /> > Golden Snapshots > renders two tool groups where only the last line of the previous group is visible 1`] = `
 " ╰──────────────────────────────────────────────────────────────────────────╯
  ╭──────────────────────────────────────────────────────────────────────────╮
+<<<<<<< HEAD
  │ ✓                                                                        │
  │ tool-2 Description 2                                                     │                      ▄
+=======
+ │ ✓  tool-2 Description 2                                                  │
+ │                                                                          │                      ▄
+>>>>>>> 536fe2fe8 (fix(cli): resolve upstream layout conflicts, update snapshots, and fix test mocks)
  │ line1                                                                    │                      █
  ╰──────────────────────────────────────────────────────────────────────────╯                      █
 "
@@ -122,12 +193,21 @@ exports[`<ToolGroupMessage /> > Golden Snapshots > renders two tool groups where
 
 exports[`<ToolGroupMessage /> > Golden Snapshots > renders with limited terminal height 1`] = `
 " ╭──────────────────────────────────────────────────────────────────────────╮
+<<<<<<< HEAD
  │ ✓                                                                        │
  │ tool-with-result Tool with output                                        │
  │ This is a long result that might need height constraints                 │
  │                                                                          │
  │ ✓                                                                        │
  │ another-tool Another tool                                                │
+=======
+ │ ✓  tool-with-result Tool with output                                     │
+ │                                                                          │
+ │ This is a long result that might need height constraints                 │
+ │                                                                          │
+ │ ✓  another-tool Another tool                                             │
+ │                                                                          │
+>>>>>>> 536fe2fe8 (fix(cli): resolve upstream layout conflicts, update snapshots, and fix test mocks)
  │ More output here                                                         │
  ╰──────────────────────────────────────────────────────────────────────────╯
 "
@@ -135,8 +215,13 @@ exports[`<ToolGroupMessage /> > Golden Snapshots > renders with limited terminal
 
 exports[`<ToolGroupMessage /> > Golden Snapshots > renders with narrow terminal width 1`] = `
 " ╭──────────────────────────────────╮
+<<<<<<< HEAD
  │ ✓                                │
  │ very-long-tool-name-that-might-… │
+=======
+ │ ✓  very-long-tool-name-that-mig… │
+ │                                  │
+>>>>>>> 536fe2fe8 (fix(cli): resolve upstream layout conflicts, update snapshots, and fix test mocks)
  │ Test result                      │
  ╰──────────────────────────────────╯
 "
@@ -144,6 +229,7 @@ exports[`<ToolGroupMessage /> > Golden Snapshots > renders with narrow terminal 
 
 exports[`<ToolGroupMessage /> > Height Calculation > calculates available height correctly with multiple tools with results 1`] = `
 " ╭──────────────────────────────────────────────────────────────────────────╮
+<<<<<<< HEAD
  │ ✓                                                                        │
  │ test-tool A tool for testing                                             │
  │ Result 1                                                                 │
@@ -154,6 +240,18 @@ exports[`<ToolGroupMessage /> > Height Calculation > calculates available height
  │                                                                          │
  │ ✓                                                                        │
  │ test-tool A tool for testing                                             │
+=======
+ │ ✓  test-tool A tool for testing                                          │
+ │                                                                          │
+ │ Result 1                                                                 │
+ │                                                                          │
+ │ ✓  test-tool A tool for testing                                          │
+ │                                                                          │
+ │ Result 2                                                                 │
+ │                                                                          │
+ │ ✓  test-tool A tool for testing                                          │
+ │                                                                          │
+>>>>>>> 536fe2fe8 (fix(cli): resolve upstream layout conflicts, update snapshots, and fix test mocks)
  ╰──────────────────────────────────────────────────────────────────────────╯
 "
 `;
