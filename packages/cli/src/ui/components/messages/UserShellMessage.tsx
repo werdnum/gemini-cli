@@ -36,6 +36,7 @@ export const UserShellMessage: React.FC<UserShellMessageProps> = ({
         marginY={useBackgroundColor ? 0 : 1}
         paddingX={useBackgroundColor ? 1 : 0}
         width={width}
+        marginLeft={1}
       >
         <Text color={theme.ui.symbol}>$ </Text>
         <Text color={theme.text.primary}>{commandToDisplay}</Text>

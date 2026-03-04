@@ -16,6 +16,7 @@ export interface StickyHeaderProps {
   borderColor: string;
   borderDimColor: boolean;
   containerRef?: React.RefObject<DOMElement | null>;
+  marginLeft?: number;
 }
 
 export const StickyHeader: React.FC<StickyHeaderProps> = ({
@@ -25,6 +26,7 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
   borderColor,
   borderDimColor,
   containerRef,
+  marginLeft,
 }) => {
   const commonProps = {
     borderStyle: 'round' as const,
@@ -43,6 +45,7 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
       minHeight={1}
       flexShrink={0}
       width={width}
+      marginLeft={marginLeft}
       stickyChildren={
         <CopySafeBox {...commonProps} flexDirection="column" opaque>
           <Box paddingX={1} flexDirection="row">

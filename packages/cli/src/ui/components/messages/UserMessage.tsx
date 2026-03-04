@@ -59,9 +59,10 @@ export const UserMessage: React.FC<UserMessageProps> = ({ text, width }) => {
         flexDirection="row"
         paddingY={0}
         marginY={useBackgroundColor ? 0 : 1}
-        paddingX={useBackgroundColor ? 1 : 0}
+        paddingX={0}
         alignSelf="flex-start"
         width={width}
+        marginLeft={1}
       >
         <Box width={prefixWidth} flexShrink={0}>
           <Text

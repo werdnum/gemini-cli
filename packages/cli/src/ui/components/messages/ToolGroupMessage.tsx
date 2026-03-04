@@ -233,9 +233,8 @@ export const ToolGroupMessage: React.FC<ToolGroupMessageProps> = ({
       Ink to render the border of the box incorrectly and span multiple lines and even
       cause tearing.
     */
-      width={terminalWidth - 1}
+      width={terminalWidth}
       paddingRight={TOOL_MESSAGE_HORIZONTAL_MARGIN}
-      marginLeft={1}
     >
       {visibleToolCalls.map((tool, index) => {
         const isFirst = index === 0;
@@ -279,6 +278,7 @@ export const ToolGroupMessage: React.FC<ToolGroupMessageProps> = ({
                 borderStyle="round"
                 paddingLeft={1}
                 paddingRight={1}
+                marginLeft={1}
               >
                 <Box>
                   <Text color={theme.text.primary}>
@@ -306,14 +306,17 @@ export const ToolGroupMessage: React.FC<ToolGroupMessageProps> = ({
             borderColor={borderColor}
             borderDimColor={borderDimColor}
             borderStyle="round"
+            marginLeft={1}
           />
         )
       }
       {(borderBottomOverride ?? true) && visibleToolCalls.length > 0 && (
-        <ShowMoreLines
-          constrainHeight={constrainHeight && !!isExpandable}
-          isOverflowing={hasOverflow}
-        />
+        <Box marginLeft={1}>
+          <ShowMoreLines
+            constrainHeight={constrainHeight && !!isExpandable}
+            isOverflowing={hasOverflow}
+          />
+        </Box>
       )}
     </Box>
   );

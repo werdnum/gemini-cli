@@ -5,14 +5,15 @@ exports[`ToolConfirmationQueue > calculates availableContentHeight based on avai
 │ Action Required                                                              │
 │                                                                              │
 │ ?  replace edit file                                                         │
-│ ... 49 hidden (Ctrl+O) ...                                                   │
-│ 50 line                                                                      │
-│ Apply this change?                                                           │
 │                                                                              │
-│ ● 1. Allow once                                                              │
-│   2. Allow for this session                                                  │
-│   3. Modify with external editor                                             │
-│   4. No, suggest changes (esc)                                               │
+│  ... 49 hidden (Ctrl+O) ...                                                  │
+│  50 line                                                                     │
+│  Apply this change?                                                          │
+│                                                                              │
+│  ● 1. Allow once                                                             │
+│    2. Allow for this session                                                 │
+│    3. Modify with external editor                                            │
+│    4. No, suggest changes (esc)                                              │
 │                                                                              │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 "
@@ -23,17 +24,18 @@ exports[`ToolConfirmationQueue > does not render expansion hint when constrainHe
 │ Action Required                                                              │
 │                                                                              │
 │ ?  replace edit file                                                         │
-│ ╭──────────────────────────────────────────────────────────────────────────╮ │
-│ │                                                                          │ │
-│ │ No changes detected.                                                     │ │
-│ │                                                                          │ │
-│ ╰──────────────────────────────────────────────────────────────────────────╯ │
-│ Apply this change?                                                           │
 │                                                                              │
-│ ● 1. Allow once                                                              │
-│   2. Allow for this session                                                  │
-│   3. Modify with external editor                                             │
-│   4. No, suggest changes (esc)                                               │
+│  ╭─────────────────────────────────────────────────────────────────────────╮ │
+│  │                                                                         │ │
+│  │ No changes detected.                                                    │ │
+│  │                                                                         │ │
+│  ╰─────────────────────────────────────────────────────────────────────────╯ │
+│  Apply this change?                                                          │
+│                                                                              │
+│  ● 1. Allow once                                                             │
+│    2. Allow for this session                                                 │
+│    3. Modify with external editor                                            │
+│    4. No, suggest changes (esc)                                              │
 │                                                                              │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 "
@@ -42,18 +44,19 @@ exports[`ToolConfirmationQueue > does not render expansion hint when constrainHe
 exports[`ToolConfirmationQueue > provides more height for ask_user by subtracting less overhead 1`] = `
 "╭──────────────────────────────────────────────────────────────────────────────╮
 │ Answer Questions                                                             │
-│ Line 1                                                                       │
-│ Line 2                                                                       │
-│ Line 3                                                                       │
-│ Line 4                                                                       │
-│ Line 5                                                                       │
-│ Line 6                                                                       │
 │                                                                              │
-│ ● 1.  Option 1                                                               │
-│       Desc                                                                   │
-│   2.  Enter a custom value                                                   │
+│  Line 1                                                                      │
+│  Line 2                                                                      │
+│  Line 3                                                                      │
+│  Line 4                                                                      │
+│  Line 5                                                                      │
+│  Line 6                                                                      │
 │                                                                              │
-│ Enter to select · ↑/↓ to navigate · Esc to cancel                            │
+│  ● 1.  Option 1                                                              │
+│        Desc                                                                  │
+│    2.  Enter a custom value                                                  │
+│                                                                              │
+│  Enter to select · ↑/↓ to navigate · Esc to cancel                           │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 "
 `;
@@ -61,10 +64,11 @@ exports[`ToolConfirmationQueue > provides more height for ask_user by subtractin
 exports[`ToolConfirmationQueue > renders AskUser tool confirmation with Success color 1`] = `
 "╭──────────────────────────────────────────────────────────────────────────────╮
 │ Answer Questions                                                             │
-│ Review your answers:                                                         │
+│                                                                              │
+│  Review your answers:                                                        │
 │                                                                              │
 │                                                                              │
-│ Enter to submit · Tab/Shift+Tab to edit answers · Esc to cancel              │
+│  Enter to submit · Tab/Shift+Tab to edit answers · Esc to cancel             │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 "
 `;
@@ -72,15 +76,16 @@ exports[`ToolConfirmationQueue > renders AskUser tool confirmation with Success 
 exports[`ToolConfirmationQueue > renders ExitPlanMode tool confirmation with Success color 1`] = `
 "╭──────────────────────────────────────────────────────────────────────────────╮
 │ Ready to start implementation?                                               │
-│ Plan content goes here                                                       │
 │                                                                              │
-│ ● 1.  Yes, automatically accept edits                                        │
-│       Approves plan and allows tools to run automatically                    │
-│   2.  Yes, manually accept edits                                             │
-│       Approves plan but requires confirmation for each tool                  │
-│   3.  Type your feedback...                                                  │
+│  Plan content goes here                                                      │
 │                                                                              │
-│ Enter to select · ↑/↓ to navigate · Ctrl+X to edit plan · Esc to cancel      │
+│  ● 1.  Yes, automatically accept edits                                       │
+│        Approves plan and allows tools to run automatically                   │
+│    2.  Yes, manually accept edits                                            │
+│        Approves plan but requires confirmation for each tool                 │
+│    3.  Type your feedback...                                                 │
+│                                                                              │
+│  Enter to select · ↑/↓ to navigate · Ctrl+X to edit plan · Esc to cancel     │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 "
 `;
@@ -90,14 +95,15 @@ exports[`ToolConfirmationQueue > renders expansion hint when content is long and
 │ Action Required                                                              │
 │                                                                              │
 │ ?  replace edit file                                                         │
-│ ... 49 hidden (Ctrl+O) ...                                                   │
-│ 50 line                                                                      │
-│ Apply this change?                                                           │
 │                                                                              │
-│ ● 1. Allow once                                                              │
-│   2. Allow for this session                                                  │
-│   3. Modify with external editor                                             │
-│   4. No, suggest changes (esc)                                               │
+│  ... 49 hidden (Ctrl+O) ...                                                  │
+│  50 line                                                                     │
+│  Apply this change?                                                          │
+│                                                                              │
+│  ● 1. Allow once                                                             │
+│    2. Allow for this session                                                 │
+│    3. Modify with external editor                                            │
+│    4. No, suggest changes (esc)                                              │
 │                                                                              │
 ╰──────────────────────────────────────────────────────────────────────────────╯
  Press Ctrl+O to show more lines
@@ -109,12 +115,13 @@ exports[`ToolConfirmationQueue > renders the confirming tool with progress indic
 │ Action Required                                                       1 of 3 │
 │                                                                              │
 │ ?  ls list files                                                             │
-│ ls                                                                           │
-│ Allow execution of: 'ls'?                                                    │
 │                                                                              │
-│ ● 1. Allow once                                                              │
-│   2. Allow for this session                                                  │
-│   3. No, suggest changes (esc)                                               │
+│  ls                                                                          │
+│  Allow execution of: 'ls'?                                                   │
+│                                                                              │
+│  ● 1. Allow once                                                             │
+│    2. Allow for this session                                                 │
+│    3. No, suggest changes (esc)                                              │
 │                                                                              │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 "

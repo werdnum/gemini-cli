@@ -33,7 +33,7 @@ export const GeminiMessage: React.FC<GeminiMessageProps> = ({
 
   const isAlternateBuffer = useAlternateBuffer();
   const content = (
-    <Box flexDirection="row">
+    <Box flexDirection="row" marginLeft={1}>
       <Box width={prefixWidth}>
         <Text color={theme.text.accent} aria-label={SCREEN_READER_MODEL_PREFIX}>
           {prefix}

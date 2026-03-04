@@ -2,19 +2,19 @@
 
 exports[`Copy Mode Alignment Regression > ThinkingMessage > aligns to column 4 in copy mode 1`] = `
 "   Thinking summary
-    Thinking body
+   Thinking body
 "
 `;
 
 exports[`Copy Mode Alignment Regression > ThinkingMessage > aligns to column 4 in normal mode 1`] = `
 "   Thinking summary
-  │ Thinking body
+ │ Thinking body
 "
 `;
 
 exports[`Copy Mode Alignment Regression > ToolGroupMessage (Standard Tool) > aligns header and content to column 4 in copy mode 1`] = `
 "
-   ⊷  test-tool Running test-tool
+   ✓  test-tool Running test-tool
 
    tool output text
 "

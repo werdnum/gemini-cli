@@ -29,7 +29,12 @@ export const InfoMessage: React.FC<InfoMessageProps> = ({
   const prefixWidth = prefix.length;
 
   return (
-    <Box flexDirection="row" marginTop={1} marginBottom={marginBottom ?? 0}>
+    <Box
+      flexDirection="row"
+      marginTop={1}
+      marginBottom={marginBottom ?? 0}
+      marginLeft={1}
+    >
       <Box width={prefixWidth}>
         <Text color={color}>{prefix}</Text>
       </Box>

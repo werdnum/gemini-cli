@@ -15,10 +15,10 @@ interface WarningMessageProps {
 
 export const WarningMessage: React.FC<WarningMessageProps> = ({ text }) => {
   const prefix = '⚠ ';
-  const prefixWidth = 3;
+  const prefixWidth = prefix.length;
 
   return (
-    <Box flexDirection="row" marginTop={1}>
+    <Box flexDirection="row" marginTop={1} marginLeft={1}>
       <Box width={prefixWidth}>
         <Text color={theme.status.warning}>{prefix}</Text>
       </Box>
