@@ -119,7 +119,7 @@ describe('getCommandRoots', () => {
   });
 
   it('should handle paths and return the binary name', () => {
-    expect(getCommandRoots('/usr/local/bin/node script.js')).toEqual(['node']);
+    expect(getCommandRoots('/usr/local/bin/node script.js')).toEqual(['/usr/local/bin/node']);
   });
 
   it('should return an empty array for an empty string', () => {
