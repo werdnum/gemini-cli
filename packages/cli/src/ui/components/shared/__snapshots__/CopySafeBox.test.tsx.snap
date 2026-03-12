@@ -1,5 +1,18 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`CopySafeBox > content is not indented differently when border is removed in copy mode 1`] = `
+"╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
+│  Content                                                                                         │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+"
+`;
+
+exports[`CopySafeBox > content is not indented differently when border is removed in copy mode 2`] = `
+"
+   Content
+"
+`;
+
 exports[`CopySafeBox > handles partial borders correctly in copy mode 1`] = `
 "
   Content

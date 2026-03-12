@@ -76,4 +76,89 @@ describe('CopySafeBox', () => {
     expect(lines[2]).toContain('Content');
     expect(frame).toMatchSnapshot();
   });
+
+  it('content is not indented differently when border is removed in copy mode', async () => {
+    // Normal Mode
+    const normalMode = renderWithProviders(
+      <CopySafeBox borderStyle="round" paddingX={2}>
+        <Text>Content</Text>
+      </CopySafeBox>,
+      { uiState: { copyModeEnabled: false } },
+    );
+    await normalMode.waitUntilReady();
+    const normalFrame = normalMode.lastFrame();
+
+    // Copy Mode
+    const copyMode = renderWithProviders(
+      <CopySafeBox borderStyle="round" paddingX={2}>
+        <Text>Content</Text>
+      </CopySafeBox>,
+      { uiState: { copyModeEnabled: true } },
+    );
+    await copyMode.waitUntilReady();
+    const copyFrame = copyMode.lastFrame();
+
+    // Verify indentation via snapshot
+    // In normal mode: 1 (border) + 2 (paddingX) = 3 spaces before Content
+    // In copy mode: 1 (compensated border) + 2 (paddingX) = 3 spaces before Content
+    expect(normalFrame).toContain('│  Content');
+    expect(copyFrame).toContain('   Content');
+
+    // The requested snapshot-based tests to verify content is unchanged
+    expect(normalFrame).toMatchSnapshot();
+    expect(copyFrame).toMatchSnapshot();
+  });
+
+  it('box size is unchanged in copy mode', async () => {
+    let normalSize: any;
+    let copySize: any;
+
+    const normalMode = renderWithProviders(
+      <CopySafeBox
+        borderStyle="round"
+        paddingX={2}
+        paddingY={1}
+        width={80}
+        ref={(el) => {
+          if (el && !normalSize) {
+            import('ink').then(({ measureElement }) => {
+              normalSize = measureElement(el);
+            });
+          }
+        }}
+      >
+        <Text>Content</Text>
+      </CopySafeBox>,
+      { uiState: { copyModeEnabled: false } },
+    );
+    await normalMode.waitUntilReady();
+
+    const copyMode = renderWithProviders(
+      <CopySafeBox
+        borderStyle="round"
+        paddingX={2}
+        paddingY={1}
+        width={80}
+        ref={(el) => {
+          if (el && !copySize) {
+            import('ink').then(({ measureElement }) => {
+              copySize = measureElement(el);
+            });
+          }
+        }}
+      >
+        <Text>Content</Text>
+      </CopySafeBox>,
+      { uiState: { copyModeEnabled: true } },
+    );
+    await copyMode.waitUntilReady();
+
+    // Provide a small delay to let `measureElement` run.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(normalSize).toBeDefined();
+    expect(copySize).toBeDefined();
+    expect(copySize.width).toBe(normalSize.width);
+    expect(copySize.height).toBe(normalSize.height);
+  });
 });
