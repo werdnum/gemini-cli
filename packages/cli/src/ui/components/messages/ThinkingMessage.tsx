@@ -53,7 +53,7 @@ export const ThinkingMessage: React.FC<ThinkingMessageProps> = ({
   }
 
   return (
-    <Box width="100%" marginBottom={1} flexDirection="column" marginLeft={1}>
+    <Box width="100%" marginBottom={1} flexDirection="column" >
       {summary && (
         <Box paddingLeft={2}>
           <Text color={theme.text.primary} bold italic>

@@ -653,7 +653,7 @@ export const ToolConfirmationMessage: React.FC<
           paddingTop={1}
           paddingBottom={1}
           overflow="hidden"
-          marginLeft={1}
+
         >
           <Text color={theme.text.primary}>Modify in progress: </Text>
           <Text color={theme.status.success}>
@@ -669,7 +669,7 @@ export const ToolConfirmationMessage: React.FC<
       flexDirection="column"
       paddingTop={0}
       paddingBottom={handlesOwnUI ? 0 : 1}
-      marginLeft={1}
+
     >
       {handlesOwnUI ? (
         bodyContent

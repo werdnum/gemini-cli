@@ -88,7 +88,7 @@ export const ToolMessage: React.FC<ToolMessageProps> = ({
         isFirst={isFirst}
         borderColor={borderColor}
         borderDimColor={borderDimColor}
-        marginLeft={1}
+
       >
         <ToolStatusIndicator
           status={status}
@@ -119,7 +119,7 @@ export const ToolMessage: React.FC<ToolMessageProps> = ({
         borderRight={true}
         paddingX={1}
         flexDirection="column"
-        marginLeft={1}
+
       >
         {status === CoreToolCallStatus.Executing && progress !== undefined && (
           <McpProgressIndicator
