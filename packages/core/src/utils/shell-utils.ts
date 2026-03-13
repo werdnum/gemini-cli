@@ -266,7 +266,7 @@ function normalizeCommandName(raw: string): string {
   if (!trimmed) {
     return trimmed;
   }
-  return trimmed.split(/[\\/]/).pop() ?? trimmed;
+  return trimmed;
 }
 
 function extractNameFromNode(node: Node): string | null {
