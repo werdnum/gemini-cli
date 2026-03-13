@@ -10,8 +10,7 @@ import {
   SessionStartSource,
   flushTelemetry,
 } from '@google/gemini-cli-core';
-import type { SlashCommand } from './types.js';
-import { CommandKind } from './types.js';
+import { CommandKind, type SlashCommand } from './types.js';
 import { MessageType } from '../types.js';
 import { randomUUID } from 'node:crypto';
 
@@ -23,13 +22,24 @@ export const clearCommand: SlashCommand = {
   action: async (context, _args) => {
     const geminiClient = context.services.config?.getGeminiClient();
     const config = context.services.config;
-    const chatRecordingService = context.services.config
-      ?.getGeminiClient()
-      ?.getChat()
-      .getChatRecordingService();
 
     // Fire SessionEnd hook before clearing
-    await config?.getHookSystem()?.fireSessionEndEvent(SessionEndReason.Clear);
+    const hookSystem = config?.getHookSystem();
+    if (hookSystem) {
+      await hookSystem.fireSessionEndEvent(SessionEndReason.Clear);
+    }
+
+    // Reset user steering hints
+    config?.userHintService.clear();
+
+    // Start a new conversation recording with a new session ID
+    // We MUST do this before calling resetChat() so the new ChatRecordingService
+    // initialized by GeminiChat picks up the new session ID.
+    let newSessionId: string | undefined;
+    if (config) {
+      newSessionId = randomUUID();
+      config.setSessionId(newSessionId);
+    }
 
     if (geminiClient) {
       context.ui.setDebugMessage('Clearing terminal and resetting chat.');
@@ -40,17 +50,11 @@ export const clearCommand: SlashCommand = {
       context.ui.setDebugMessage('Clearing terminal.');
     }
 
-    // Start a new conversation recording with a new session ID
-    if (config && chatRecordingService) {
-      const newSessionId = randomUUID();
-      config.setSessionId(newSessionId);
-      chatRecordingService.initialize();
-    }
-
     // Fire SessionStart hook after clearing
-    const result = await config
-      ?.getHookSystem()
-      ?.fireSessionStartEvent(SessionStartSource.Clear);
+    let result;
+    if (hookSystem) {
+      result = await hookSystem.fireSessionStartEvent(SessionStartSource.Clear);
+    }
 
     // Give the event loop a chance to process any pending telemetry operations
     // This ensures logger.emit() calls have fully propagated to the BatchLogRecordProcessor
@@ -62,14 +66,14 @@ export const clearCommand: SlashCommand = {
       await flushTelemetry(config);
     }
 
-    uiTelemetryService.setLastPromptTokenCount(0);
+    uiTelemetryService.clear(newSessionId);
     context.ui.clear();
 
-    if (result?.finalOutput?.systemMessage) {
+    if (result?.systemMessage) {
       context.ui.addItem(
         {
           type: MessageType.INFO,
-          text: result.finalOutput.systemMessage,
+          text: result.systemMessage,
         },
         Date.now(),
       );

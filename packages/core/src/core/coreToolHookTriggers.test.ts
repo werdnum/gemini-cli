@@ -11,12 +11,15 @@ import {
   BaseToolInvocation,
   type ToolResult,
   type AnyDeclarativeTool,
+  type ToolLiveOutput,
 } from '../tools/tools.js';
 import type { MessageBus } from '../confirmation-bus/message-bus.js';
+import type { HookSystem } from '../hooks/hookSystem.js';
+import type { Config } from '../config/config.js';
 import {
-  MessageBusType,
-  type HookExecutionResponse,
-} from '../confirmation-bus/types.js';
+  type DefaultHookOutput,
+  BeforeToolHookOutput,
+} from '../hooks/types.js';
 
 class MockInvocation extends BaseToolInvocation<{ key?: string }, ToolResult> {
   constructor(params: { key?: string }, messageBus: MessageBus) {
@@ -35,9 +38,35 @@ class MockInvocation extends BaseToolInvocation<{ key?: string }, ToolResult> {
   }
 }
 
+class MockBackgroundableInvocation extends BaseToolInvocation<
+  { key?: string },
+  ToolResult
+> {
+  constructor(params: { key?: string }, messageBus: MessageBus) {
+    super(params, messageBus);
+  }
+  getDescription() {
+    return 'mock-pid';
+  }
+  async execute(
+    _signal: AbortSignal,
+    _updateOutput?: (output: ToolLiveOutput) => void,
+    _shellExecutionConfig?: unknown,
+    setExecutionIdCallback?: (executionId: number) => void,
+  ) {
+    setExecutionIdCallback?.(4242);
+    return {
+      llmContent: 'pid',
+      returnDisplay: 'pid',
+    };
+  }
+}
+
 describe('executeToolWithHooks', () => {
   let messageBus: MessageBus;
   let mockTool: AnyDeclarativeTool;
+  let mockHookSystem: HookSystem;
+  let mockConfig: Config;
 
   beforeEach(() => {
     messageBus = {
@@ -46,6 +75,15 @@ describe('executeToolWithHooks', () => {
       subscribe: vi.fn(),
       unsubscribe: vi.fn(),
     } as unknown as MessageBus;
+    mockHookSystem = {
+      fireBeforeToolEvent: vi.fn(),
+      fireAfterToolEvent: vi.fn(),
+    } as unknown as HookSystem;
+    mockConfig = {
+      getHookSystem: vi.fn().mockReturnValue(mockHookSystem),
+      getMcpClientManager: vi.fn().mockReturnValue(undefined),
+      getMcpServers: vi.fn().mockReturnValue({}),
+    } as unknown as Config;
     mockTool = {
       build: vi
         .fn()
@@ -57,25 +95,24 @@ describe('executeToolWithHooks', () => {
     const invocation = new MockInvocation({}, messageBus);
     const abortSignal = new AbortController().signal;
 
-    vi.mocked(messageBus.request).mockResolvedValue({
-      type: MessageBusType.HOOK_EXECUTION_RESPONSE,
-      correlationId: 'test-id',
-      success: true,
-      output: {
-        continue: false,
-        stopReason: 'Stop immediately',
-        decision: 'block',
+    vi.mocked(mockHookSystem.fireBeforeToolEvent).mockResolvedValue({
+      shouldStopExecution: () => true,
+      getEffectiveReason: () => 'Stop immediately',
+      getBlockingError: () => ({
+        blocked: false,
         reason: 'Should be ignored because continue is false',
-      },
-    } as HookExecutionResponse);
+      }),
+    } as unknown as DefaultHookOutput);
 
     const result = await executeToolWithHooks(
       invocation,
       'test_tool',
       abortSignal,
-      messageBus,
-      true,
       mockTool,
+      undefined,
+      undefined,
+      undefined,
+      mockConfig,
     );
 
     expect(result.error?.type).toBe(ToolErrorType.STOP_EXECUTION);
@@ -86,23 +123,21 @@ describe('executeToolWithHooks', () => {
     const invocation = new MockInvocation({}, messageBus);
     const abortSignal = new AbortController().signal;
 
-    vi.mocked(messageBus.request).mockResolvedValue({
-      type: MessageBusType.HOOK_EXECUTION_RESPONSE,
-      correlationId: 'test-id',
-      success: true,
-      output: {
-        decision: 'block',
-        reason: 'Execution blocked',
-      },
-    } as HookExecutionResponse);
+    vi.mocked(mockHookSystem.fireBeforeToolEvent).mockResolvedValue({
+      shouldStopExecution: () => false,
+      getEffectiveReason: () => '',
+      getBlockingError: () => ({ blocked: true, reason: 'Execution blocked' }),
+    } as unknown as DefaultHookOutput);
 
     const result = await executeToolWithHooks(
       invocation,
       'test_tool',
       abortSignal,
-      messageBus,
-      true,
       mockTool,
+      undefined,
+      undefined,
+      undefined,
+      mockConfig,
     );
 
     expect(result.error?.type).toBe(ToolErrorType.EXECUTION_FAILED);
@@ -114,32 +149,27 @@ describe('executeToolWithHooks', () => {
     const abortSignal = new AbortController().signal;
     const spy = vi.spyOn(invocation, 'execute');
 
-    // BeforeTool allow
-    vi.mocked(messageBus.request)
-      .mockResolvedValueOnce({
-        type: MessageBusType.HOOK_EXECUTION_RESPONSE,
-        correlationId: 'test-id',
-        success: true,
-        output: { decision: 'allow' },
-      } as HookExecutionResponse)
-      // AfterTool stop
-      .mockResolvedValueOnce({
-        type: MessageBusType.HOOK_EXECUTION_RESPONSE,
-        correlationId: 'test-id',
-        success: true,
-        output: {
-          continue: false,
-          stopReason: 'Stop after execution',
-        },
-      } as HookExecutionResponse);
+    vi.mocked(mockHookSystem.fireBeforeToolEvent).mockResolvedValue({
+      shouldStopExecution: () => false,
+      getEffectiveReason: () => '',
+      getBlockingError: () => ({ blocked: false, reason: '' }),
+    } as unknown as DefaultHookOutput);
+
+    vi.mocked(mockHookSystem.fireAfterToolEvent).mockResolvedValue({
+      shouldStopExecution: () => true,
+      getEffectiveReason: () => 'Stop after execution',
+      getBlockingError: () => ({ blocked: false, reason: '' }),
+    } as unknown as DefaultHookOutput);
 
     const result = await executeToolWithHooks(
       invocation,
       'test_tool',
       abortSignal,
-      messageBus,
-      true,
       mockTool,
+      undefined,
+      undefined,
+      undefined,
+      mockConfig,
     );
 
     expect(result.error?.type).toBe(ToolErrorType.STOP_EXECUTION);
@@ -151,32 +181,27 @@ describe('executeToolWithHooks', () => {
     const invocation = new MockInvocation({}, messageBus);
     const abortSignal = new AbortController().signal;
 
-    // BeforeTool allow
-    vi.mocked(messageBus.request)
-      .mockResolvedValueOnce({
-        type: MessageBusType.HOOK_EXECUTION_RESPONSE,
-        correlationId: 'test-id',
-        success: true,
-        output: { decision: 'allow' },
-      } as HookExecutionResponse)
-      // AfterTool deny
-      .mockResolvedValueOnce({
-        type: MessageBusType.HOOK_EXECUTION_RESPONSE,
-        correlationId: 'test-id',
-        success: true,
-        output: {
-          decision: 'deny',
-          reason: 'Result denied',
-        },
-      } as HookExecutionResponse);
+    vi.mocked(mockHookSystem.fireBeforeToolEvent).mockResolvedValue({
+      shouldStopExecution: () => false,
+      getEffectiveReason: () => '',
+      getBlockingError: () => ({ blocked: false, reason: '' }),
+    } as unknown as DefaultHookOutput);
+
+    vi.mocked(mockHookSystem.fireAfterToolEvent).mockResolvedValue({
+      shouldStopExecution: () => false,
+      getEffectiveReason: () => '',
+      getBlockingError: () => ({ blocked: true, reason: 'Result denied' }),
+    } as unknown as DefaultHookOutput);
 
     const result = await executeToolWithHooks(
       invocation,
       'test_tool',
       abortSignal,
-      messageBus,
-      true,
       mockTool,
+      undefined,
+      undefined,
+      undefined,
+      mockConfig,
     );
 
     expect(result.error?.type).toBe(ToolErrorType.EXECUTION_FAILED);
@@ -189,39 +214,28 @@ describe('executeToolWithHooks', () => {
     const toolName = 'test-tool';
     const abortSignal = new AbortController().signal;
 
-    // Capture arguments to verify what was passed before modification
-    const requestSpy = vi.fn().mockImplementation(async (request) => {
-      if (request.eventName === 'BeforeTool') {
-        // Verify input is original before we return modification instruction
-        expect(request.input.tool_input.key).toBe('original');
-        return {
-          type: MessageBusType.HOOK_EXECUTION_RESPONSE,
-          correlationId: 'test-id',
-          success: true,
-          output: {
-            hookSpecificOutput: {
-              hookEventName: 'BeforeTool',
-              tool_input: { key: 'modified' },
-            },
-          },
-        } as HookExecutionResponse;
-      }
-      return {
-        type: MessageBusType.HOOK_EXECUTION_RESPONSE,
-        correlationId: 'test-id',
-        success: true,
-        output: {},
-      } as HookExecutionResponse;
+    const mockBeforeOutput = new BeforeToolHookOutput({
+      continue: true,
+      hookSpecificOutput: {
+        hookEventName: 'BeforeTool',
+        tool_input: { key: 'modified' },
+      },
     });
-    messageBus.request = requestSpy;
+    vi.mocked(mockHookSystem.fireBeforeToolEvent).mockResolvedValue(
+      mockBeforeOutput,
+    );
+
+    vi.mocked(mockHookSystem.fireAfterToolEvent).mockResolvedValue(undefined);
 
     const result = await executeToolWithHooks(
       invocation,
       toolName,
       abortSignal,
-      messageBus,
-      true, // hooksEnabled
       mockTool,
+      undefined,
+      undefined,
+      undefined,
+      mockConfig,
     );
 
     // Verify result reflects modified input
@@ -231,7 +245,7 @@ describe('executeToolWithHooks', () => {
     // Verify params object was modified in place
     expect(invocation.params.key).toBe('modified');
 
-    expect(requestSpy).toHaveBeenCalled();
+    expect(mockHookSystem.fireBeforeToolEvent).toHaveBeenCalled();
     expect(mockTool.build).toHaveBeenCalledWith({ key: 'modified' });
   });
 
@@ -241,29 +255,54 @@ describe('executeToolWithHooks', () => {
     const toolName = 'test-tool';
     const abortSignal = new AbortController().signal;
 
-    vi.mocked(messageBus.request).mockResolvedValue({
-      type: MessageBusType.HOOK_EXECUTION_RESPONSE,
-      correlationId: 'test-id',
-      success: true,
-      output: {
-        hookSpecificOutput: {
-          hookEventName: 'BeforeTool',
-          // No tool_input
-        },
+    const mockBeforeOutput = new BeforeToolHookOutput({
+      continue: true,
+      hookSpecificOutput: {
+        hookEventName: 'BeforeTool',
+        // No tool input
       },
-    } as HookExecutionResponse);
+    });
+    vi.mocked(mockHookSystem.fireBeforeToolEvent).mockResolvedValue(
+      mockBeforeOutput,
+    );
+
+    vi.mocked(mockHookSystem.fireAfterToolEvent).mockResolvedValue(undefined);
 
     const result = await executeToolWithHooks(
       invocation,
       toolName,
       abortSignal,
-      messageBus,
-      true, // hooksEnabled
       mockTool,
+      undefined,
+      undefined,
+      undefined,
+      mockConfig,
     );
 
     expect(result.llmContent).toBe('key: original');
     expect(invocation.params.key).toBe('original');
     expect(mockTool.build).not.toHaveBeenCalled();
+  });
+
+  it('should pass execution ID callback through for non-shell invocations', async () => {
+    const invocation = new MockBackgroundableInvocation({}, messageBus);
+    const abortSignal = new AbortController().signal;
+    const setExecutionIdCallback = vi.fn();
+
+    vi.mocked(mockHookSystem.fireBeforeToolEvent).mockResolvedValue(undefined);
+    vi.mocked(mockHookSystem.fireAfterToolEvent).mockResolvedValue(undefined);
+
+    await executeToolWithHooks(
+      invocation,
+      'test_tool',
+      abortSignal,
+      mockTool,
+      undefined,
+      undefined,
+      setExecutionIdCallback,
+      mockConfig,
+    );
+
+    expect(setExecutionIdCallback).toHaveBeenCalledWith(4242);
   });
 });

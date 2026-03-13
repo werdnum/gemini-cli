@@ -111,10 +111,16 @@ describe(`useKeypress`, () => {
 
   it('should correctly identify alt+enter (meta key)', () => {
     renderKeypressHook(true);
-    const key = { name: 'return', sequence: '\x1B\r' };
+    const key = { name: 'enter', sequence: '\x1B\r' };
     act(() => stdin.write(key.sequence));
     expect(onKeypress).toHaveBeenCalledWith(
-      expect.objectContaining({ ...key, meta: true }),
+      expect.objectContaining({
+        ...key,
+        shift: false,
+        alt: true,
+        ctrl: false,
+        cmd: false,
+      }),
     );
   });
 
@@ -140,9 +146,10 @@ describe(`useKeypress`, () => {
       expect(onKeypress).toHaveBeenCalledTimes(1);
       expect(onKeypress).toHaveBeenCalledWith({
         name: 'paste',
-        ctrl: false,
-        meta: false,
         shift: false,
+        alt: false,
+        ctrl: false,
+        cmd: false,
         insertable: true,
         sequence: pasteText,
       });

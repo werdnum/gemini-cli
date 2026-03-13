@@ -8,13 +8,16 @@ import { Box, Text } from 'ink';
 import type React from 'react';
 import { useState } from 'react';
 import { theme } from '../semantic-colors.js';
-import type { RadioSelectItem } from './shared/RadioButtonSelect.js';
-import { RadioButtonSelect } from './shared/RadioButtonSelect.js';
+import {
+  RadioButtonSelect,
+  type RadioSelectItem,
+} from './shared/RadioButtonSelect.js';
 import { useKeypress } from '../hooks/useKeypress.js';
 import { loadTrustedFolders, TrustLevel } from '../../config/trustedFolders.js';
 import { expandHomeDir } from '../utils/directoryUtils.js';
+import * as path from 'node:path';
 import { MessageType, type HistoryItem } from '../types.js';
-import type { Config } from '@google/gemini-cli-core';
+import { type Config } from '@google/gemini-cli-core';
 
 export enum MultiFolderTrustChoice {
   YES,
@@ -71,7 +74,9 @@ export const MultiFolderTrustDialog: React.FC<MultiFolderTrustDialogProps> = ({
       if (key.name === 'escape') {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         handleCancel();
+        return true;
       }
+      return false;
     },
     { isActive: !submitted },
   );
@@ -120,13 +125,17 @@ export const MultiFolderTrustDialog: React.FC<MultiFolderTrustDialogProps> = ({
     } else {
       for (const dir of folders) {
         try {
-          const expandedPath = expandHomeDir(dir);
+          const expandedPath = path.resolve(expandHomeDir(dir));
           if (choice === MultiFolderTrustChoice.YES_AND_REMEMBER) {
-            trustedFolders.setValue(expandedPath, TrustLevel.TRUST_FOLDER);
+            await trustedFolders.setValue(
+              expandedPath,
+              TrustLevel.TRUST_FOLDER,
+            );
           }
           workspaceContext.addDirectory(expandedPath);
           added.push(dir);
         } catch (e) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
           const error = e as Error;
           errors.push(`Error adding '${dir}': ${error.message}`);
         }

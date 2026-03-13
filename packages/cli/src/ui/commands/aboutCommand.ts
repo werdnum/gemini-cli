@@ -4,8 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { CommandContext, SlashCommand } from './types.js';
-import { CommandKind } from './types.js';
+import {
+  CommandKind,
+  type CommandContext,
+  type SlashCommand,
+} from './types.js';
 import process from 'node:process';
 import { MessageType, type HistoryItemAbout } from '../types.js';
 import {
@@ -20,6 +23,7 @@ export const aboutCommand: SlashCommand = {
   description: 'Show version info',
   kind: CommandKind.BUILT_IN,
   autoExecute: true,
+  isSafeConcurrent: true,
   action: async (context) => {
     const osVersion = process.platform;
     let sandboxEnv = 'no sandbox';
@@ -44,6 +48,8 @@ export const aboutCommand: SlashCommand = {
     });
     const userEmail = cachedAccount ?? undefined;
 
+    const tier = context.services.config?.getUserTierName();
+
     const aboutItem: Omit<HistoryItemAbout, 'id'> = {
       type: MessageType.ABOUT,
       cliVersion,
@@ -54,6 +60,7 @@ export const aboutCommand: SlashCommand = {
       gcpProject,
       ideClient,
       userEmail,
+      tier,
     };
 
     context.ui.addItem(aboutItem);

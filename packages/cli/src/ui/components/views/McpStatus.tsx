@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { MCPServerConfig } from '@google/gemini-cli-core';
-import { MCPServerStatus } from '@google/gemini-cli-core';
+import { MCPServerStatus, type MCPServerConfig } from '@google/gemini-cli-core';
 import { Box, Text } from 'ink';
 import type React from 'react';
 import { MAX_MCP_RESOURCES_TO_SHOW } from '../../constants.js';
@@ -25,6 +24,8 @@ interface McpStatusProps {
   blockedServers: Array<{ name: string; extensionName: string }>;
   serverStatus: (serverName: string) => MCPServerStatus;
   authStatus: HistoryItemMcpStatus['authStatus'];
+  enablementState: HistoryItemMcpStatus['enablementState'];
+  errors: Record<string, string>;
   discoveryInProgress: boolean;
   connectingServers: string[];
   showDescriptions: boolean;
@@ -39,12 +40,19 @@ export const McpStatus: React.FC<McpStatusProps> = ({
   blockedServers,
   serverStatus,
   authStatus,
+  enablementState,
+  errors,
   discoveryInProgress,
   connectingServers,
   showDescriptions,
   showSchema,
 }) => {
-  const serverNames = Object.keys(servers);
+  const serverNames = Object.keys(servers).filter(
+    (serverName) =>
+      !blockedServers.some(
+        (blockedServer) => blockedServer.name === serverName,
+      ),
+  );
 
   if (serverNames.length === 0 && blockedServers.length === 0) {
     return (
@@ -78,7 +86,6 @@ export const McpStatus: React.FC<McpStatusProps> = ({
 
       <Text bold>Configured MCP servers:</Text>
       <Box height={1} />
-
       {serverNames.map((serverName) => {
         const server = servers[serverName];
         const serverTools = tools.filter(
@@ -104,23 +111,35 @@ export const McpStatus: React.FC<McpStatusProps> = ({
         let statusText = '';
         let statusColor = theme.text.primary;
 
-        switch (status) {
-          case MCPServerStatus.CONNECTED:
-            statusIndicator = '🟢';
-            statusText = 'Ready';
-            statusColor = theme.status.success;
-            break;
-          case MCPServerStatus.CONNECTING:
-            statusIndicator = '🔄';
-            statusText = 'Starting... (first startup may take longer)';
-            statusColor = theme.status.warning;
-            break;
-          case MCPServerStatus.DISCONNECTED:
-          default:
-            statusIndicator = '🔴';
-            statusText = 'Disconnected';
-            statusColor = theme.status.error;
-            break;
+        // Check enablement state
+        const serverEnablement = enablementState[serverName];
+        const isDisabled = serverEnablement && !serverEnablement.enabled;
+
+        if (isDisabled) {
+          statusIndicator = '⏸️';
+          statusText = serverEnablement.isSessionDisabled
+            ? 'Disabled (session)'
+            : 'Disabled';
+          statusColor = theme.text.secondary;
+        } else {
+          switch (status) {
+            case MCPServerStatus.CONNECTED:
+              statusIndicator = '🟢';
+              statusText = 'Ready';
+              statusColor = theme.status.success;
+              break;
+            case MCPServerStatus.CONNECTING:
+              statusIndicator = '🔄';
+              statusText = 'Starting... (first startup may take longer)';
+              statusColor = theme.status.warning;
+              break;
+            case MCPServerStatus.DISCONNECTED:
+            default:
+              statusIndicator = '🔴';
+              statusText = 'Disconnected';
+              statusColor = theme.status.error;
+              break;
+          }
         }
 
         let serverDisplayName = serverName;
@@ -179,6 +198,14 @@ export const McpStatus: React.FC<McpStatusProps> = ({
             )}
             {status === MCPServerStatus.DISCONNECTED && toolCount > 0 && (
               <Text> ({toolCount} tools cached)</Text>
+            )}
+
+            {errors[serverName] && (
+              <Box marginLeft={2}>
+                <Text color={theme.status.error}>
+                  Error: {errors[serverName]}
+                </Text>
+              </Box>
             )}
 
             {showDescriptions && server?.description && (

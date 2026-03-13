@@ -4,21 +4,32 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { type Config } from '../config/config.js';
 import { type Status } from '../core/coreToolScheduler.js';
 import { type ThoughtSummary } from '../utils/thoughtUtils.js';
 import { getProjectHash } from '../utils/paths.js';
+import { sanitizeFilenamePart } from '../utils/fileUtils.js';
 import path from 'node:path';
 import fs from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import type {
+  Content,
+  Part,
   PartListUnion,
   GenerateContentResponseUsageMetadata,
 } from '@google/genai';
 import { debugLogger } from '../utils/debugLogger.js';
 import type { ToolResultDisplay } from '../tools/tools.js';
+import type { AgentLoopContext } from '../config/agent-loop-context.js';
 
 export const SESSION_FILE_PREFIX = 'session-';
+
+/**
+ * Warning message shown when recording is disabled due to disk full.
+ */
+const ENOSPC_WARNING_MESSAGE =
+  'Chat recording disabled: No space left on device. ' +
+  'The conversation will continue but will not be saved to disk. ' +
+  'Free up disk space and restart to enable recording.';
 
 /**
  * Token usage summary for a message or conversation.
@@ -39,6 +50,7 @@ export interface BaseMessageRecord {
   id: string;
   timestamp: string;
   content: PartListUnion;
+  displayContent?: PartListUnion;
 }
 
 /**
@@ -88,6 +100,10 @@ export interface ConversationRecord {
   lastUpdated: string;
   messages: MessageRecord[];
   summary?: string;
+  /** Workspace directories added during the session via /dir add */
+  directories?: string[];
+  /** The kind of conversation (main agent or subagent) */
+  kind?: 'main' | 'subagent';
 }
 
 /**
@@ -112,28 +128,38 @@ export interface ResumedSessionData {
 export class ChatRecordingService {
   private conversationFile: string | null = null;
   private cachedLastConvData: string | null = null;
+  private cachedConversation: ConversationRecord | null = null;
   private sessionId: string;
   private projectHash: string;
+  private kind?: 'main' | 'subagent';
   private queuedThoughts: Array<ThoughtSummary & { timestamp: string }> = [];
   private queuedTokens: TokensSummary | null = null;
-  private config: Config;
+  private context: AgentLoopContext;
 
-  constructor(config: Config) {
-    this.config = config;
-    this.sessionId = config.getSessionId();
-    this.projectHash = getProjectHash(config.getProjectRoot());
+  constructor(context: AgentLoopContext) {
+    this.context = context;
+    this.sessionId = context.promptId;
+    this.projectHash = getProjectHash(context.config.getProjectRoot());
   }
 
   /**
    * Initializes the chat recording service: creates a new conversation file and associates it with
    * this service instance, or resumes from an existing session if resumedSessionData is provided.
+   *
+   * @param resumedSessionData Data from a previous session to resume from.
+   * @param kind The kind of conversation (main or subagent).
    */
-  initialize(resumedSessionData?: ResumedSessionData): void {
+  initialize(
+    resumedSessionData?: ResumedSessionData,
+    kind?: 'main' | 'subagent',
+  ): void {
     try {
+      this.kind = kind;
       if (resumedSessionData) {
         // Resume from existing session
         this.conversationFile = resumedSessionData.filePath;
         this.sessionId = resumedSessionData.conversation.sessionId;
+        this.kind = resumedSessionData.conversation.kind;
 
         // Update the session ID in the existing file
         this.updateConversation((conversation) => {
@@ -142,10 +168,12 @@ export class ChatRecordingService {
 
         // Clear any cached data to force fresh reads
         this.cachedLastConvData = null;
+        this.cachedConversation = null;
       } else {
         // Create new session
+        this.sessionId = this.context.promptId;
         const chatsDir = path.join(
-          this.config.storage.getProjectTempDir(),
+          this.context.config.storage.getProjectTempDir(),
           'chats',
         );
         fs.mkdirSync(chatsDir, { recursive: true });
@@ -166,6 +194,7 @@ export class ChatRecordingService {
           startTime: new Date().toISOString(),
           lastUpdated: new Date().toISOString(),
           messages: [],
+          kind: this.kind,
         });
       }
 
@@ -173,6 +202,17 @@ export class ChatRecordingService {
       this.queuedThoughts = [];
       this.queuedTokens = null;
     } catch (error) {
+      // Handle disk full (ENOSPC) gracefully - disable recording but allow CLI to continue
+      if (
+        error instanceof Error &&
+        'code' in error &&
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+        (error as NodeJS.ErrnoException).code === 'ENOSPC'
+      ) {
+        this.conversationFile = null;
+        debugLogger.warn(ENOSPC_WARNING_MESSAGE);
+        return; // Don't throw - allow the CLI to continue
+      }
       debugLogger.error('Error initializing chat recording service:', error);
       throw error;
     }
@@ -187,12 +227,14 @@ export class ChatRecordingService {
   private newMessage(
     type: ConversationRecordExtra['type'],
     content: PartListUnion,
+    displayContent?: PartListUnion,
   ): MessageRecord {
     return {
       id: randomUUID(),
       timestamp: new Date().toISOString(),
       type,
       content,
+      displayContent,
     };
   }
 
@@ -203,12 +245,17 @@ export class ChatRecordingService {
     model: string | undefined;
     type: ConversationRecordExtra['type'];
     content: PartListUnion;
+    displayContent?: PartListUnion;
   }): void {
     if (!this.conversationFile) return;
 
     try {
       this.updateConversation((conversation) => {
-        const msg = this.newMessage(message.type, message.content);
+        const msg = this.newMessage(
+          message.type,
+          message.content,
+          message.displayContent,
+        );
         if (msg.type === 'gemini') {
           // If it's a new Gemini message then incorporate any queued thoughts.
           conversation.messages.push({
@@ -264,17 +311,19 @@ export class ChatRecordingService {
         tool: respUsageMetadata.toolUsePromptTokenCount ?? 0,
         total: respUsageMetadata.totalTokenCount ?? 0,
       };
-      this.updateConversation((conversation) => {
-        const lastMsg = this.getLastMessage(conversation);
-        // If the last message already has token info, it's because this new token info is for a
-        // new message that hasn't been recorded yet.
-        if (lastMsg && lastMsg.type === 'gemini' && !lastMsg.tokens) {
-          lastMsg.tokens = tokens;
-          this.queuedTokens = null;
-        } else {
-          this.queuedTokens = tokens;
-        }
-      });
+      const conversation = this.readConversation();
+      const lastMsg = this.getLastMessage(conversation);
+      // If the last message already has token info, it's because this new token info is for a
+      // new message that hasn't been recorded yet.
+      if (lastMsg && lastMsg.type === 'gemini' && !lastMsg.tokens) {
+        lastMsg.tokens = tokens;
+        this.queuedTokens = null;
+        this.writeConversation(conversation);
+      } else {
+        // Only queue tokens in memory; no disk I/O needed since the
+        // conversation record itself hasn't changed.
+        this.queuedTokens = tokens;
+      }
     } catch (error) {
       debugLogger.error(
         'Error updating message tokens in chat history.',
@@ -292,13 +341,14 @@ export class ChatRecordingService {
     if (!this.conversationFile) return;
 
     // Enrich tool calls with metadata from the ToolRegistry
-    const toolRegistry = this.config.getToolRegistry();
+    const toolRegistry = this.context.toolRegistry;
     const enrichedToolCalls = toolCalls.map((toolCall) => {
       const toolInstance = toolRegistry.getTool(toolCall.name);
       return {
         ...toolCall,
         displayName: toolInstance?.displayName || toolCall.name,
-        description: toolInstance?.description || '',
+        description:
+          toolCall.description?.trim() || toolInstance?.description || '',
         renderOutputAsMarkdown: toolInstance?.isOutputMarkdown || false,
       };
     });
@@ -383,25 +433,49 @@ export class ChatRecordingService {
 
   /**
    * Loads up the conversation record from disk.
+   *
+   * NOTE: The returned object is the live in-memory cache reference.
+   * Any mutations to it will be visible to all subsequent reads.
+   * Callers that mutate the result MUST call writeConversation() to
+   * persist the changes to disk.
    */
   private readConversation(): ConversationRecord {
+    if (this.cachedConversation) {
+      return this.cachedConversation;
+    }
     try {
       this.cachedLastConvData = fs.readFileSync(this.conversationFile!, 'utf8');
-      return JSON.parse(this.cachedLastConvData);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      this.cachedConversation = JSON.parse(this.cachedLastConvData);
+      if (!this.cachedConversation) {
+        // File is corrupt or contains "null". Fallback to an empty conversation.
+        this.cachedConversation = {
+          sessionId: this.sessionId,
+          projectHash: this.projectHash,
+          startTime: new Date().toISOString(),
+          lastUpdated: new Date().toISOString(),
+          messages: [],
+          kind: this.kind,
+        };
+      }
+      return this.cachedConversation;
     } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
         debugLogger.error('Error reading conversation file.', error);
         throw error;
       }
 
       // Placeholder empty conversation if file doesn't exist.
-      return {
+      this.cachedConversation = {
         sessionId: this.sessionId,
         projectHash: this.projectHash,
         startTime: new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
         messages: [],
+        kind: this.kind,
       };
+      return this.cachedConversation;
     }
   }
 
@@ -417,14 +491,32 @@ export class ChatRecordingService {
       // Don't write the file yet until there's at least one message.
       if (conversation.messages.length === 0 && !allowEmpty) return;
 
-      // Only write the file if this change would change the file.
-      if (this.cachedLastConvData !== JSON.stringify(conversation, null, 2)) {
-        conversation.lastUpdated = new Date().toISOString();
-        const newContent = JSON.stringify(conversation, null, 2);
-        this.cachedLastConvData = newContent;
-        fs.writeFileSync(this.conversationFile, newContent);
-      }
+      const newContent = JSON.stringify(conversation, null, 2);
+      // Skip the disk write if nothing actually changed (e.g.
+      // updateMessagesFromHistory found no matching tool calls to update).
+      // Compare before updating lastUpdated so the timestamp doesn't
+      // cause a false diff.
+      if (this.cachedLastConvData === newContent) return;
+      this.cachedConversation = conversation;
+      conversation.lastUpdated = new Date().toISOString();
+      const contentToWrite = JSON.stringify(conversation, null, 2);
+      this.cachedLastConvData = contentToWrite;
+      // Ensure directory exists before writing (handles cases where temp dir was cleaned)
+      fs.mkdirSync(path.dirname(this.conversationFile), { recursive: true });
+      fs.writeFileSync(this.conversationFile, contentToWrite);
     } catch (error) {
+      // Handle disk full (ENOSPC) gracefully - disable recording but allow conversation to continue
+      if (
+        error instanceof Error &&
+        'code' in error &&
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+        (error as NodeJS.ErrnoException).code === 'ENOSPC'
+      ) {
+        this.conversationFile = null;
+        this.cachedConversation = null;
+        debugLogger.warn(ENOSPC_WARNING_MESSAGE);
+        return; // Don't throw - allow the conversation to continue
+      }
       debugLogger.error('Error writing conversation file.', error);
       throw error;
     }
@@ -459,6 +551,23 @@ export class ChatRecordingService {
   }
 
   /**
+   * Records workspace directories to the session file.
+   * Called when directories are added via /dir add.
+   */
+  recordDirectories(directories: readonly string[]): void {
+    if (!this.conversationFile) return;
+
+    try {
+      this.updateConversation((conversation) => {
+        conversation.directories = [...directories];
+      });
+    } catch (error) {
+      debugLogger.error('Error saving directories to chat history.', error);
+      // Don't throw - we want graceful degradation
+    }
+  }
+
+  /**
    * Gets the current conversation data (for summary generation).
    */
   getConversation(): ConversationRecord | null {
@@ -474,7 +583,7 @@ export class ChatRecordingService {
 
   /**
    * Gets the path to the current conversation file.
-   * Returns null if the service hasn't been initialized yet.
+   * Returns null if the service hasn't been initialized yet or recording is disabled.
    */
   getConversationFilePath(): string | null {
     return this.conversationFile;
@@ -485,12 +594,43 @@ export class ChatRecordingService {
    */
   deleteSession(sessionId: string): void {
     try {
-      const chatsDir = path.join(
-        this.config.storage.getProjectTempDir(),
-        'chats',
-      );
+      const tempDir = this.context.config.storage.getProjectTempDir();
+      const chatsDir = path.join(tempDir, 'chats');
       const sessionPath = path.join(chatsDir, `${sessionId}.json`);
-      fs.unlinkSync(sessionPath);
+      if (fs.existsSync(sessionPath)) {
+        fs.unlinkSync(sessionPath);
+      }
+
+      // Cleanup Activity logs in the project logs directory
+      const logsDir = path.join(tempDir, 'logs');
+      const logPath = path.join(logsDir, `session-${sessionId}.jsonl`);
+      if (fs.existsSync(logPath)) {
+        fs.unlinkSync(logPath);
+      }
+
+      // Cleanup tool outputs for this session
+      const safeSessionId = sanitizeFilenamePart(sessionId);
+      const toolOutputDir = path.join(
+        tempDir,
+        'tool-outputs',
+        `session-${safeSessionId}`,
+      );
+
+      // Robustness: Ensure the path is strictly within the tool-outputs base
+      const toolOutputsBase = path.join(tempDir, 'tool-outputs');
+      if (
+        fs.existsSync(toolOutputDir) &&
+        toolOutputDir.startsWith(toolOutputsBase)
+      ) {
+        fs.rmSync(toolOutputDir, { recursive: true, force: true });
+      }
+
+      // ALSO cleanup the session-specific directory (contains plans, tasks, etc.)
+      const sessionDir = path.join(tempDir, safeSessionId);
+      // Robustness: Ensure the path is strictly within the temp root
+      if (fs.existsSync(sessionDir) && sessionDir.startsWith(tempDir)) {
+        fs.rmSync(sessionDir, { recursive: true, force: true });
+      }
     } catch (error) {
       debugLogger.error('Error deleting session file.', error);
       throw error;
@@ -520,5 +660,67 @@ export class ChatRecordingService {
     conversation.messages = conversation.messages.slice(0, messageIndex);
     this.writeConversation(conversation, { allowEmpty: true });
     return conversation;
+  }
+
+  /**
+   * Updates the conversation history based on the provided API Content array.
+   * This is used to persist changes made to the history (like masking) back to disk.
+   */
+  updateMessagesFromHistory(history: readonly Content[]): void {
+    if (!this.conversationFile) return;
+
+    try {
+      this.updateConversation((conversation) => {
+        // Create a map of tool results from the API history for quick lookup by call ID.
+        // We store the full list of parts associated with each tool call ID to preserve
+        // multi-modal data and proper trajectory structure.
+        const partsMap = new Map<string, Part[]>();
+        for (const content of history) {
+          if (content.role === 'user' && content.parts) {
+            // Find all unique call IDs in this message
+            const callIds = content.parts
+              .map((p) => p.functionResponse?.id)
+              .filter((id): id is string => !!id);
+
+            if (callIds.length === 0) continue;
+
+            // Use the first ID as a seed to capture any "leading" non-ID parts
+            // in this specific content block.
+            let currentCallId = callIds[0];
+            for (const part of content.parts) {
+              if (part.functionResponse?.id) {
+                currentCallId = part.functionResponse.id;
+              }
+
+              if (!partsMap.has(currentCallId)) {
+                partsMap.set(currentCallId, []);
+              }
+              partsMap.get(currentCallId)!.push(part);
+            }
+          }
+        }
+
+        // Update the conversation records tool results if they've changed.
+        for (const message of conversation.messages) {
+          if (message.type === 'gemini' && message.toolCalls) {
+            for (const toolCall of message.toolCalls) {
+              const newParts = partsMap.get(toolCall.id);
+              if (newParts !== undefined) {
+                // Store the results as proper Parts (including functionResponse)
+                // instead of stringifying them as text parts. This ensures the
+                // tool trajectory is correctly reconstructed upon session resumption.
+                toolCall.result = newParts;
+              }
+            }
+          }
+        }
+      });
+    } catch (error) {
+      debugLogger.error(
+        'Error updating conversation history from memory.',
+        error,
+      );
+      throw error;
+    }
   }
 }

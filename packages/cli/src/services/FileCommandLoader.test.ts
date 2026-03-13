@@ -6,8 +6,7 @@
 
 import * as glob from 'glob';
 import * as path from 'node:path';
-import type { Config } from '@google/gemini-cli-core';
-import { GEMINI_DIR, Storage } from '@google/gemini-cli-core';
+import { GEMINI_DIR, Storage, type Config } from '@google/gemini-cli-core';
 import mock from 'mock-fs';
 import { FileCommandLoader } from './FileCommandLoader.js';
 import { assert, vi } from 'vitest';
@@ -1335,6 +1334,71 @@ describe('FileCommandLoader', () => {
       expect(consoleErrorSpy).not.toHaveBeenCalled();
 
       consoleErrorSpy.mockRestore();
+    });
+  });
+
+  describe('Sanitization', () => {
+    it('sanitizes command names from filenames containing control characters', async () => {
+      const userCommandsDir = Storage.getUserCommandsDir();
+      mock({
+        [userCommandsDir]: {
+          'test\twith\nnewlines.toml': 'prompt = "Test prompt"',
+        },
+      });
+
+      const loader = new FileCommandLoader(null);
+      const commands = await loader.loadCommands(signal);
+      expect(commands).toHaveLength(1);
+      // Non-alphanumeric characters (except - and .) become underscores
+      expect(commands[0].name).toBe('test_with_newlines');
+    });
+
+    it('truncates excessively long filenames', async () => {
+      const userCommandsDir = Storage.getUserCommandsDir();
+      const longName = 'a'.repeat(60) + '.toml';
+      mock({
+        [userCommandsDir]: {
+          [longName]: 'prompt = "Test prompt"',
+        },
+      });
+
+      const loader = new FileCommandLoader(null);
+      const commands = await loader.loadCommands(signal);
+      expect(commands).toHaveLength(1);
+      expect(commands[0].name.length).toBe(50);
+      expect(commands[0].name).toBe('a'.repeat(47) + '...');
+    });
+
+    it('sanitizes descriptions containing newlines and ANSI codes', async () => {
+      const userCommandsDir = Storage.getUserCommandsDir();
+      mock({
+        [userCommandsDir]: {
+          'test.toml':
+            'prompt = "Test"\ndescription = "Line 1\\nLine 2\\tTabbed\\r\\n\\u001B[31mRed text\\u001B[0m"',
+        },
+      });
+
+      const loader = new FileCommandLoader(null);
+      const commands = await loader.loadCommands(signal);
+      expect(commands).toHaveLength(1);
+      // Newlines and tabs become spaces, ANSI is stripped
+      expect(commands[0].description).toBe('Line 1 Line 2 Tabbed Red text');
+    });
+
+    it('truncates long descriptions', async () => {
+      const userCommandsDir = Storage.getUserCommandsDir();
+      const longDesc = 'd'.repeat(150);
+      mock({
+        [userCommandsDir]: {
+          'test.toml': `prompt = "Test"\ndescription = "${longDesc}"`,
+        },
+      });
+
+      const loader = new FileCommandLoader(null);
+      const commands = await loader.loadCommands(signal);
+      expect(commands).toHaveLength(1);
+      expect(commands[0].description.length).toBe(100);
+      expect(commands[0].description).toBe('d'.repeat(97) + '...');
     });
   });
 });
